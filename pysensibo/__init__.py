@@ -4,13 +4,6 @@ import json
 import aiohttp
 
 _SERVER = 'https://home.sensibo.com/api/v2'
-_DEVICE_FIELDS = (
-    'id,room,acState,measurements,piezoVibrationThreshold,' +
-    'remoteCapabilities,connectionStatus,isBatteryLow')
-_AC_STATE_FIELDS = (
-    'time,id,acState,reason,failureReason,' +
-    'changedProperties,causedByUser')
-_MEASUREMENT_FIELDS = 'batteryVoltage,temperature,humidity,time'
 
 
 class SensiboClient(object):
@@ -29,35 +22,35 @@ class SensiboClient(object):
             self._session = aiohttp.ClientSession()
 
     @asyncio.coroutine
-    def async_get_devices(self):
+    def async_get_devices(self, fields='*'):
         """Get all devices."""
-        return (yield from self._get('/users/me/pods', fields=_DEVICE_FIELDS))
+        return (yield from self._get('/users/me/pods', fields=fields))
 
     @asyncio.coroutine
-    def async_get_device(self, uid):
+    def async_get_device(self, uid, fields='*'):
         """Get specific device by ID."""
         return (yield from self._get('/pods/{}'.format(uid),
-                                     fields=_DEVICE_FIELDS))
+                                     fields=fields))
 
     @asyncio.coroutine
-    def async_get_measurements(self, uid):
+    def async_get_measurements(self, uid, fields='*'):
         """Get measurements of a device."""
         return (yield from self._get('/pods/{}/measurements'.format(uid),
-                                     fields=_MEASUREMENT_FIELDS))[0]
+                                     fields=fields))[0]
 
     @asyncio.coroutine
-    def async_get_ac_states(self, uid, limit=1):
+    def async_get_ac_states(self, uid, limit=1, fields='*'):
         """Get log entries of a device."""
         return (yield from self._get('/pods/{}/acStates'.format(uid),
                                      limit=limit,
-                                     fields=_AC_STATE_FIELDS))
+                                     fields=fields))
 
     @asyncio.coroutine
-    def async_get_ac_state_log(self, uid, log_id):
+    def async_get_ac_state_log(self, uid, log_id, fields='*'):
         """Get a specific log entry."""
         return (
             yield from self._get('/pods/{}/acStates/{}'.format(uid, log_id),
-                                 fields=_AC_STATE_FIELDS))
+                                 fields=fields))
 
     @asyncio.coroutine
     def async_set_ac_state_property(self, uid, name, value, ac_state=None):
