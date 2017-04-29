@@ -39,11 +39,12 @@ class SensiboClient(object):
                                      fields=fields))[0]
 
     @asyncio.coroutine
-    def async_get_ac_states(self, uid, limit=1, fields='*'):
+    def async_get_ac_states(self, uid, limit=1, offset=0, fields='*'):
         """Get log entries of a device."""
         return (yield from self._get('/pods/{}/acStates'.format(uid),
                                      limit=limit,
-                                     fields=fields))
+                                     fields=fields,
+                                     offset=offset))
 
     @asyncio.coroutine
     def async_get_ac_state_log(self, uid, log_id, fields='*'):
