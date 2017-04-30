@@ -19,5 +19,8 @@ setup(
     ],
     keywords='Sensibo',
     install_requires=['aiohttp'],
+    zip_safe=True,
+    author = 'andrey-git',
+    author_email = 'andrey-git@github.com',
     packages=find_packages()
 )
