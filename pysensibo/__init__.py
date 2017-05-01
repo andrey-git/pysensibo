@@ -9,13 +9,15 @@ _SERVER = 'https://home.sensibo.com/api/v2'
 class SensiboClient(object):
     """Sensibo client implementation."""
 
-    def __init__(self, api_key, session=None):
+    def __init__(self, api_key, session=None,
+                 timeout=aiohttp.client.DEFAULT_TIMEOUT):
         """Constructor.
 
         api_key: Key from https://home.sensibo.com/me/api
         session: aiohttp.ClientSession or None to create a new session.
         """
         self._params = {'apiKey': api_key}
+        self._timeout = timeout
         if session is not None:
             self._session = session
         else:
@@ -62,11 +64,13 @@ class SensiboClient(object):
         resp = yield from self._session.patch(
             _SERVER + '/pods/{}/acStates/{}'.format(uid, name),
             data=json.dumps({'currentAcState': ac_state, 'newValue': value}),
-            params=self._params)
+            params=self._params,
+            timeout=self._timeout)
         return (yield from resp.json())['result']
 
     @asyncio.coroutine
     def _get(self, path, **kwargs):
         resp = yield from self._session.get(
-            _SERVER + path, params=dict(self._params, **kwargs))
+            _SERVER + path, params=dict(self._params, **kwargs),
+            timeout=self._timeout)
         return (yield from resp.json())['result']
