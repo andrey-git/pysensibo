@@ -56,14 +56,21 @@ class SensiboClient(object):
                                  fields=fields))
 
     @asyncio.coroutine
-    def async_set_ac_state_property(self, uid, name, value, ac_state=None):
+    def async_set_ac_state_property(
+            self, uid, name, value, ac_state=None, assumed_state=False):
         """Set a specific device property."""
         if ac_state is None:
             ac_state = yield from self.async_get_ac_states(uid)
             ac_state = ac_state[0]['acState']
+        data = {
+            'currentAcState': ac_state,
+            'newValue': value
+        }
+        if assumed_state:
+            data['reason'] = "StateCorrectionByUser"
         resp = yield from self._session.patch(
             _SERVER + '/pods/{}/acStates/{}'.format(uid, name),
-            data=json.dumps({'currentAcState': ac_state, 'newValue': value}),
+            data=json.dumps(data),
             params=self._params,
             timeout=self._timeout)
         return (yield from resp.json())['result']
