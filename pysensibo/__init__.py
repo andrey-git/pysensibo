@@ -6,6 +6,12 @@ import aiohttp
 _SERVER = 'https://home.sensibo.com/api/v2'
 
 
+class SensiboError(Exception):
+    """Generic error of Sensibo unit."""
+
+    pass
+
+
 class SensiboClient(object):
     """Sensibo client implementation."""
 
@@ -73,11 +79,19 @@ class SensiboClient(object):
             data=json.dumps(data),
             params=self._params,
             timeout=self._timeout)
-        return (yield from resp.json())['result']
+        try:
+            return (yield from resp.json())['result']
+        except aiohttp.client_exceptions.ContentTypeError:
+            pass
+        raise SensiboError((yield from resp.text()))
 
     @asyncio.coroutine
     def _get(self, path, **kwargs):
         resp = yield from self._session.get(
             _SERVER + path, params=dict(self._params, **kwargs),
             timeout=self._timeout)
-        return (yield from resp.json())['result']
+        try:
+            return (yield from resp.json())['result']
+        except aiohttp.client_exceptions.ContentTypeError:
+            pass
+        raise SensiboError((yield from resp.text()))

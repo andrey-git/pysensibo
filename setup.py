@@ -5,14 +5,14 @@ from setuptools import setup, find_packages
 print(find_packages())
 setup(
     name='pysensibo',
-    version='1.0.2',
+    version='1.0.3',
     description='asyncio-friendly python API for Sensibo',
     long_description='asyncio-friendly python API for Sensibo'
                      '(https://sensibo.com). Requires Python 3.4+',
     url='https://github.com/andrey-git/pysensibo',
     license='MIT',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
