@@ -86,6 +86,24 @@ class SensiboClient(object):
         raise SensiboError((yield from resp.text()))
 
     @asyncio.coroutine
+    def async_set_ac_state(self, uid, payload):
+        """Set a complete device state"""
+        data = {
+            'acState': payload
+        }
+
+        resp = yield from self._session.post(
+            _SERVER + '/pods/{}/acStates'.format(uid),
+            data=json.dumps(data),
+            params=self._params,
+            timeout=self._timeout)
+        try:
+            return (yield from resp.json())['result']
+        except aiohttp.client_exceptions.ContentTypeError:
+            pass
+        raise SensiboError((yield from resp.text()))
+
+    @asyncio.coroutine
     def _get(self, path, **kwargs):
         resp = yield from self._session.get(
             _SERVER + path, params=dict(self._params, **kwargs),
