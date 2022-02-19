@@ -1,11 +1,12 @@
 """Python API for Sensibo."""
 from __future__ import annotations
-import json
 
+import json
 from typing import Any
+
 from aiohttp import ClientSession
 
-from .exceptions import SensiboError, AuthenticationError
+from .exceptions import AuthenticationError, SensiboError
 
 APIV1 = "https://home.sensibo.com/api/v1"
 APIV2 = "https://home.sensibo.com/api/v2"
@@ -64,7 +65,7 @@ class SensiboClient(object):
         params = {"apiKey": self.api_key}
         return await self._put(APIV2 + "/pods/{}/smartmode".format(uid), params, data)
 
-    async def async_get_timer(self, uid: str):
+    async def async_get_timer(self, uid: str) -> dict[str, Any]:
         """Get Timer on a device.
 
         uid: UID for device
@@ -145,6 +146,19 @@ class SensiboClient(object):
             APIV1 + "/pods/{}/schedules/{}".format(uid, schedule_id), params
         )
 
+    async def async_set_calibration(
+        self, uid: str, data: dict[str, float]
+    ) -> dict[str, Any]:
+        """Adjust calibration on a device.
+
+        uid: UID for device
+        data: dict temperature or humidity and float as value
+        """
+        params = {"apiKey": self.api_key}
+        return await self._post(
+            APIV2 + "/pods/{}/calibration/".format(uid), params, data
+        )
+
     async def async_set_ac_states(
         self,
         uid: str,
@@ -194,7 +208,7 @@ class SensiboClient(object):
             try:
                 response = await resp.json()
             except Exception as error:
-                raise SensiboError(f"Could not return json {error}")
+                raise SensiboError(f"Could not return json {error}") from error
         return response["result"]
 
     async def _put(
@@ -212,7 +226,7 @@ class SensiboClient(object):
             try:
                 response = await resp.json()
             except Exception as error:
-                raise SensiboError(f"Could not return json {error}")
+                raise SensiboError(f"Could not return json {error}") from error
         return response["result"]
 
     async def _post(
@@ -230,7 +244,7 @@ class SensiboClient(object):
             try:
                 response = await resp.json()
             except Exception as error:
-                raise SensiboError(f"Could not return json {error}")
+                raise SensiboError(f"Could not return json {error}") from error
         return response["result"]
 
     async def _patch(
@@ -248,7 +262,7 @@ class SensiboClient(object):
             try:
                 response = await resp.json()
             except Exception as error:
-                raise SensiboError(f"Could not return json {error}")
+                raise SensiboError(f"Could not return json {error}") from error
         return response["result"]
 
     async def _delete(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
@@ -264,5 +278,5 @@ class SensiboClient(object):
             try:
                 response = await resp.json()
             except Exception as error:
-                raise SensiboError(f"Could not return json {error}")
+                raise SensiboError(f"Could not return json {error}") from error
         return response["result"]
