@@ -90,3 +90,7 @@ ENV/
 
 # IntelliJ
 .idea/
+
+# Other
+api/
+.mypy_cache/
