@@ -209,7 +209,7 @@ class SensiboClient(object):
                 response = await resp.json()
             except Exception as error:
                 raise SensiboError(f"Could not return json {error}") from error
-        return response["result"]
+        return response
 
     async def _put(
         self, path: str, params: dict[str, Any], data: dict[str, Any]
@@ -227,7 +227,7 @@ class SensiboClient(object):
                 response = await resp.json()
             except Exception as error:
                 raise SensiboError(f"Could not return json {error}") from error
-        return response["result"]
+        return response
 
     async def _post(
         self, path: str, params: dict[str, Any], data: dict[str, Any]
@@ -245,7 +245,7 @@ class SensiboClient(object):
                 response = await resp.json()
             except Exception as error:
                 raise SensiboError(f"Could not return json {error}") from error
-        return response["result"]
+        return response
 
     async def _patch(
         self, path: str, params: dict[str, Any], data: dict[str, Any]
@@ -263,7 +263,7 @@ class SensiboClient(object):
                 response = await resp.json()
             except Exception as error:
                 raise SensiboError(f"Could not return json {error}") from error
-        return response["result"]
+        return response
 
     async def _delete(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
         """Make DELETE api call to Sensibo api."""
@@ -279,4 +279,4 @@ class SensiboClient(object):
                 response = await resp.json()
             except Exception as error:
                 raise SensiboError(f"Could not return json {error}") from error
-        return response["result"]
+        return response
