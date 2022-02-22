@@ -29,6 +29,11 @@ class SensiboClient(object):
         self._session = session if session else ClientSession()
         self.timeout = timeout
 
+    async def async_get_me(self) -> dict[str, Any]:
+        """Return info about me."""
+        params = {"apiKey": self.api_key}
+        return await self._get(APIV1 + "/users/me", params)
+
     async def async_get_devices(self, fields: str = "*") -> dict[str, Any]:
         """Get all devices.
 
