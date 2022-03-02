@@ -205,7 +205,7 @@ class SensiboClient(object):
     async def _get(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
         """Make GET api call to Sensibo api."""
         async with self._session.get(path, params=params, timeout=self.timeout) as resp:
-            if resp.status == 401:
+            if resp.status in [401, 403]:
                 raise AuthenticationError("Invalid API key")
             if resp.status != 200:
                 error = await resp.text()
@@ -223,7 +223,7 @@ class SensiboClient(object):
         async with self._session.put(
             path, params=params, data=json.dumps(data), timeout=self.timeout
         ) as resp:
-            if resp.status == 401:
+            if resp.status in [401, 403]:
                 raise AuthenticationError("Invalid API key")
             if resp.status != 200:
                 error = await resp.text()
@@ -241,7 +241,7 @@ class SensiboClient(object):
         async with self._session.post(
             path, params=params, data=json.dumps(data), timeout=self.timeout
         ) as resp:
-            if resp.status == 401:
+            if resp.status in [401, 403]:
                 raise AuthenticationError("Invalid API key")
             if resp.status != 200:
                 error = await resp.text()
@@ -259,7 +259,7 @@ class SensiboClient(object):
         async with self._session.patch(
             path, params=params, data=json.dumps(data), timeout=self.timeout
         ) as resp:
-            if resp.status == 401:
+            if resp.status in [401, 403]:
                 raise AuthenticationError("Invalid API key")
             if resp.status != 200:
                 error = await resp.text()
@@ -275,7 +275,7 @@ class SensiboClient(object):
         async with self._session.delete(
             path, params=params, timeout=self.timeout
         ) as resp:
-            if resp.status == 401:
+            if resp.status in [401, 403]:
                 raise AuthenticationError("Invalid API key")
             if resp.status != 200:
                 error = await resp.text()
