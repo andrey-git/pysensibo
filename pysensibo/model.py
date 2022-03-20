@@ -9,8 +9,8 @@ from typing import Any
 class SensiboData:
     """Dataclass for Sensibo data."""
 
-    raw: dict
-    parsed: dict
+    raw: dict[str, Any]
+    parsed: dict[str, SensiboDevice]
 
 
 @dataclass
