@@ -7,12 +7,14 @@ from typing import Any
 from aiohttp import ClientResponse, ClientSession
 
 from .exceptions import AuthenticationError, SensiboError
+from .model import MotionSensor, SensiboData, SensiboDevice
 
 APIV1 = "https://home.sensibo.com/api/v1"
 APIV2 = "https://home.sensibo.com/api/v2"
 
 TIMEOUT = 5 * 60
 HTTP_AUTH_FAILED_STATUS_CODES = {401, 403}
+MAX_POSSIBLE_STEP = 1000
 
 
 class SensiboClient:
@@ -42,6 +44,154 @@ class SensiboClient:
         """
         params = {"apiKey": self.api_key, "fields": fields}
         return await self._get(APIV2 + "/users/me/pods", params)
+
+    async def async_get_devices_data(self) -> SensiboData:
+        """Return dataclass with Sensibo Devices."""
+        devices = []
+        data = await self.async_get_devices()
+        for dev in data["result"]:
+            devices.append(dev)
+
+        device_data: dict[str, SensiboDevice] = {}
+        for dev in devices:
+            unique_id = dev["id"]
+            mac = dev["macAddress"]
+            name = dev["room"]["name"]
+            temperature = dev["measurements"].get("temperature")
+            humidity = dev["measurements"].get("humidity")
+            ac_states = dev["acState"]
+            target_temperature = ac_states.get("targetTemperature")
+            hvac_mode = ac_states.get("mode")
+            running = ac_states.get("on")
+            fan_mode = ac_states.get("fanLevel")
+            swing_mode = ac_states.get("swing")
+            horizontal_swing_mode = ac_states.get("horizontalSwing")
+            light_mode = ac_states.get("light")
+            available = dev["connectionStatus"].get("isAlive", True)
+            capabilities = dev["remoteCapabilities"]
+            hvac_modes = list(capabilities["modes"])
+            if hvac_modes:
+                hvac_modes.append("off")
+            current_capabilities = capabilities["modes"][ac_states.get("mode")]
+            fan_modes = current_capabilities.get("fanLevels")
+            swing_modes = current_capabilities.get("swing")
+            horizontal_swing_modes = current_capabilities.get("horizontalSwing")
+            light_modes = current_capabilities.get("light")
+            temperature_unit_key = dev.get("temperatureUnit") or ac_states.get(
+                "temperatureUnit"
+            )
+            temperatures_list = (
+                current_capabilities["temperatures"]
+                .get(temperature_unit_key, {})
+                .get("values", [0, 1])
+            )
+            if temperatures_list:
+                diff = MAX_POSSIBLE_STEP
+                for i in range(len(temperatures_list) - 1):
+                    if temperatures_list[i + 1] - temperatures_list[i] < diff:
+                        diff = temperatures_list[i + 1] - temperatures_list[i]
+                temperature_step = diff
+
+            active_features = list(ac_states)
+            full_features = set()
+            for mode in capabilities["modes"]:
+                if "temperatures" in capabilities["modes"][mode]:
+                    full_features.add("targetTemperature")
+                if "swing" in capabilities["modes"][mode]:
+                    full_features.add("swing")
+                if "fanLevels" in capabilities["modes"][mode]:
+                    full_features.add("fanLevel")
+                if "horizontalSwing" in capabilities["modes"][mode]:
+                    full_features.add("horizontalSwing")
+                if "light" in capabilities["modes"][mode]:
+                    full_features.add("light")
+
+            state = hvac_mode if hvac_mode else "off"
+
+            fw_ver = dev["firmwareVersion"]
+            fw_type = dev["firmwareType"]
+            model = dev["productModel"]
+
+            calibration_temp = dev["sensorsCalibration"].get("temperature")
+            calibration_hum = dev["sensorsCalibration"].get("humidity")
+
+            # Sky plus supports functionality to use motion sensor as sensor for temp and humidity
+            if main_sensor := dev["mainMeasurementsSensor"]:
+                measurements = main_sensor["measurements"]
+                temperature = measurements.get("temperature")
+                humidity = measurements.get("humidity")
+
+            motion_sensors: dict[str, MotionSensor] = {}
+            if dev["motionSensors"]:
+                for sensor in dev["motionSensors"]:
+                    measurement = sensor["measurements"]
+                    motion_sensors[sensor["id"]] = MotionSensor(
+                        id=sensor["id"],
+                        alive=sensor["connectionStatus"].get("isAlive"),
+                        motion=measurement.get("motion"),
+                        fw_ver=sensor.get("firmwareVersion"),
+                        fw_type=sensor.get("firmwareType"),
+                        is_main_sensor=sensor.get("isMainSensor"),
+                        battery_voltage=measurement.get("batteryVoltage"),
+                        humidity=measurement.get("humidity"),
+                        temperature=measurement.get("temperature"),
+                        model=sensor.get("productModel"),
+                        rssi=measurement.get("rssi"),
+                    )
+
+            # Add information for pure devices
+            pure_conf = dev["pureBoostConfig"]
+            pure_sensitivity = pure_conf.get("sensitivity") if pure_conf else None
+            pure_boost_enabled = pure_conf.get("enabled") if pure_conf else None
+            pm25 = dev["measurements"].get("pm25")
+
+            # Binary sensors for main device
+            room_occupied = dev["roomIsOccupied"]
+            update_available = bool(
+                dev["firmwareVersion"] != dev["currentlyAvailableFirmwareVersion"]
+            )
+
+            device_data[unique_id] = SensiboDevice(
+                id=unique_id,
+                mac=mac,
+                name=name,
+                ac_states=ac_states,
+                temp=temperature,
+                humidity=humidity,
+                target_temp=target_temperature,
+                hvac_mode=hvac_mode,
+                device_on=running,
+                fan_mode=fan_mode,
+                swing_mode=swing_mode,
+                horizontal_swing_mode=horizontal_swing_mode,
+                light_mode=light_mode,
+                available=available,
+                hvac_modes=hvac_modes,
+                fan_modes=fan_modes,
+                swing_modes=swing_modes,
+                horizontal_swing_modes=horizontal_swing_modes,
+                light_modes=light_modes,
+                temp_unit=temperature_unit_key,
+                temp_list=temperatures_list,
+                temp_step=temperature_step,
+                active_features=active_features,
+                full_features=full_features,
+                state=state,
+                fw_ver=fw_ver,
+                fw_type=fw_type,
+                model=model,
+                calibration_temp=calibration_temp,
+                calibration_hum=calibration_hum,
+                full_capabilities=capabilities,
+                motion_sensors=motion_sensors,
+                pure_sensitivity=pure_sensitivity,
+                pure_boost_enabled=pure_boost_enabled,
+                pm25=pm25,
+                room_occupied=room_occupied,
+                update_available=update_available,
+            )
+
+        return SensiboData(raw=data, parsed=device_data)
 
     async def async_get_device(self, uid: str, fields: str = "*") -> dict[str, Any]:
         """Get specific device by UID.
