@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from aiohttp import ClientSession
+from aiohttp import ClientResponse, ClientSession
 
 from .exceptions import AuthenticationError, SensiboError
 
@@ -12,9 +12,10 @@ APIV1 = "https://home.sensibo.com/api/v1"
 APIV2 = "https://home.sensibo.com/api/v2"
 
 TIMEOUT = 5 * 60
+HTTP_AUTH_FAILED_STATUS_CODES = {401, 403}
 
 
-class SensiboClient(object):
+class SensiboClient:
     """Sensibo client."""
 
     def __init__(
@@ -205,16 +206,7 @@ class SensiboClient(object):
     async def _get(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
         """Make GET api call to Sensibo api."""
         async with self._session.get(path, params=params, timeout=self.timeout) as resp:
-            if resp.status in [401, 403]:
-                raise AuthenticationError("Invalid API key")
-            if resp.status != 200:
-                error = await resp.text()
-                raise SensiboError(f"API error: {error}")
-            try:
-                response = await resp.json()
-            except Exception as error:
-                raise SensiboError(f"Could not return json {error}") from error
-        return response
+            return await self._response(resp)
 
     async def _put(
         self, path: str, params: dict[str, Any], data: dict[str, Any]
@@ -223,16 +215,7 @@ class SensiboClient(object):
         async with self._session.put(
             path, params=params, data=json.dumps(data), timeout=self.timeout
         ) as resp:
-            if resp.status in [401, 403]:
-                raise AuthenticationError("Invalid API key")
-            if resp.status != 200:
-                error = await resp.text()
-                raise SensiboError(f"API error: {error}")
-            try:
-                response = await resp.json()
-            except Exception as error:
-                raise SensiboError(f"Could not return json {error}") from error
-        return response
+            return await self._response(resp)
 
     async def _post(
         self, path: str, params: dict[str, Any], data: dict[str, Any]
@@ -241,16 +224,7 @@ class SensiboClient(object):
         async with self._session.post(
             path, params=params, data=json.dumps(data), timeout=self.timeout
         ) as resp:
-            if resp.status in [401, 403]:
-                raise AuthenticationError("Invalid API key")
-            if resp.status != 200:
-                error = await resp.text()
-                raise SensiboError(f"API error: {error}")
-            try:
-                response = await resp.json()
-            except Exception as error:
-                raise SensiboError(f"Could not return json {error}") from error
-        return response
+            return await self._response(resp)
 
     async def _patch(
         self, path: str, params: dict[str, Any], data: dict[str, Any]
@@ -259,29 +233,24 @@ class SensiboClient(object):
         async with self._session.patch(
             path, params=params, data=json.dumps(data), timeout=self.timeout
         ) as resp:
-            if resp.status in [401, 403]:
-                raise AuthenticationError("Invalid API key")
-            if resp.status != 200:
-                error = await resp.text()
-                raise SensiboError(f"API error: {error}")
-            try:
-                response = await resp.json()
-            except Exception as error:
-                raise SensiboError(f"Could not return json {error}") from error
-        return response
+            return await self._response(resp)
 
     async def _delete(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
         """Make DELETE api call to Sensibo api."""
         async with self._session.delete(
             path, params=params, timeout=self.timeout
         ) as resp:
-            if resp.status in [401, 403]:
-                raise AuthenticationError("Invalid API key")
-            if resp.status != 200:
-                error = await resp.text()
-                raise SensiboError(f"API error: {error}")
-            try:
-                response = await resp.json()
-            except Exception as error:
-                raise SensiboError(f"Could not return json {error}") from error
+            return await self._response(resp)
+
+    async def _response(self, resp: ClientResponse) -> dict[str, Any]:
+        """Return response from call."""
+        if resp.status in HTTP_AUTH_FAILED_STATUS_CODES:
+            raise AuthenticationError("Invalid API key")
+        if resp.status != 200:
+            error = await resp.text()
+            raise SensiboError(f"API error: {error}")
+        try:
+            response: dict[str, Any] = await resp.json()
+        except Exception as error:
+            raise SensiboError(f"Could not return json {error}") from error
         return response
