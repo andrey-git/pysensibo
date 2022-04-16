@@ -483,7 +483,7 @@ class SensiboClient:
             except Exception as error:
                 if retry == False:
                     asyncio.sleep(5)
-                    return self._put(path, params, True)
+                    return self._put(path, params, data, True)
                 raise error
 
     async def _post(
@@ -502,7 +502,7 @@ class SensiboClient:
             except Exception as error:
                 if retry == False:
                     asyncio.sleep(5)
-                    return self._post(path, params, True)
+                    return self._post(path, params, data, True)
                 raise error
 
     async def _patch(
@@ -521,7 +521,7 @@ class SensiboClient:
             except Exception as error:
                 if retry == False:
                     asyncio.sleep(5)
-                    return self._patch(path, params, True)
+                    return self._patch(path, params, data, True)
                 raise error
 
     async def _delete(
