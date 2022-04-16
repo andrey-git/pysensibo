@@ -463,7 +463,7 @@ class SensiboClient:
                 return await self._response(resp)
             except Exception as error:
                 if retry == False:
-                    asyncio.sleep(8)
+                    asyncio.sleep(5)
                     return self._get(path, params, True)
                 raise error
 
@@ -482,7 +482,7 @@ class SensiboClient:
                 return await self._response(resp)
             except Exception as error:
                 if retry == False:
-                    asyncio.sleep(8)
+                    asyncio.sleep(5)
                     return self._put(path, params, True)
                 raise error
 
@@ -501,7 +501,7 @@ class SensiboClient:
                 return await self._response(resp)
             except Exception as error:
                 if retry == False:
-                    asyncio.sleep(8)
+                    asyncio.sleep(5)
                     return self._post(path, params, True)
                 raise error
 
@@ -520,7 +520,7 @@ class SensiboClient:
                 return await self._response(resp)
             except Exception as error:
                 if retry == False:
-                    asyncio.sleep(8)
+                    asyncio.sleep(5)
                     return self._patch(path, params, True)
                 raise error
 
@@ -535,7 +535,7 @@ class SensiboClient:
                 return await self._response(resp)
             except Exception as error:
                 if retry == False:
-                    asyncio.sleep(8)
+                    asyncio.sleep(5)
                     return self._delete(path, params, True)
                 raise error
 
