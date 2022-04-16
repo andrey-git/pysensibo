@@ -109,6 +109,7 @@ class SensiboClient:
             state = hvac_mode if hvac_mode else "off"
 
             fw_ver = dev["firmwareVersion"]
+            fw_ver_available = dev.get("currentlyAvailableFirmwareVersion")
             fw_type = dev["firmwareType"]
             model = dev["productModel"]
 
@@ -178,6 +179,7 @@ class SensiboClient:
                 full_features=full_features,
                 state=state,
                 fw_ver=fw_ver,
+                fw_ver_available=fw_ver_available,
                 fw_type=fw_type,
                 model=model,
                 calibration_temp=calibration_temp,
