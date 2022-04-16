@@ -43,6 +43,7 @@ class SensiboDevice:
     full_features: set[str]
     state: str
     fw_ver: str
+    fw_ver_available: str | None
     fw_type: str
     model: str
     calibration_temp: float | None
