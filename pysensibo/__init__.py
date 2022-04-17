@@ -162,7 +162,7 @@ class SensiboClient:
                 filters.get("filtersCleanSecondsThreshold") if filters else None
             )
             filter_last_clean = (
-                filters.get("lastFiltersCleanTime").get("time") if filters else None
+                filters.get("lastFiltersCleanTime", {}).get("time") if filters else None
             )
             filter_should_clean = filters.get("shouldCleanFilters") if filters else None
 
@@ -170,7 +170,7 @@ class SensiboClient:
             timer = dev["timer"]
             timer_id = timer.get("id") if timer else None
             timer_on = timer.get("isEnabled") if timer else None
-            timer_state = timer.get("acState").get("on") if timer else None
+            timer_state = timer.get("acState", {}).get("on") if timer else None
             timer_time_utc = timer.get("targetTime") if timer else None
 
             # Smartmode
