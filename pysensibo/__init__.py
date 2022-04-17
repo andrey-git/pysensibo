@@ -155,29 +155,32 @@ class SensiboClient:
 
             # Filters information
             filters = dev["filtersCleaning"]
-            if filters:
-                filter_ac_on = filters.get("acOnSecondsSinceLastFiltersClean")
-                filter_clean_threshold = filters.get("filtersCleanSecondsThreshold")
-                filter_last_clean = filters.get("lastFiltersCleanTime").get("time")
-                filter_should_clean = filters.get("shouldCleanFilters")
+            filter_ac_on = (
+                filters.get("acOnSecondsSinceLastFiltersClean") if filters else None
+            )
+            filter_clean_threshold = (
+                filters.get("filtersCleanSecondsThreshold") if filters else None
+            )
+            filter_last_clean = (
+                filters.get("lastFiltersCleanTime").get("time") if filters else None
+            )
+            filter_should_clean = filters.get("shouldCleanFilters") if filters else None
 
             # Timer information
             timer = dev["timer"]
-            if timer:
-                timer_id = timer.get("id")
-                timer_on = timer.get("isEnabled")
-                timer_state = timer.get("acState").get("on")
-                timer_time_utc = timer.get("targetTime")
+            timer_id = timer.get("id") if timer else None
+            timer_on = timer.get("isEnabled") if timer else None
+            timer_state = timer.get("acState").get("on") if timer else None
+            timer_time_utc = timer.get("targetTime") if timer else None
 
             # Smartmode
             smart = dev["smartMode"]
-            if smart:
-                smart_on = smart.get("enabled")
-                smart_type = smart.get("temperature")
-                smart_low = smart.get("lowTemperatureThreshold")
-                smart_high = smart.get("highTemperatureThreshold")
-                smart_low_state = smart.get("lowTemperatureState")
-                smart_high_state = smart.get("highTemperatureState")
+            smart_on = smart.get("enabled") if smart else None
+            smart_type = smart.get("temperature") if smart else None
+            smart_low = smart.get("lowTemperatureThreshold") if smart else None
+            smart_high = smart.get("highTemperatureThreshold") if smart else None
+            smart_low_state = smart.get("lowTemperatureState") if smart else None
+            smart_high_state = smart.get("highTemperatureState") if smart else None
 
             # Schedules
             schedule_list = dev["schedules"]
