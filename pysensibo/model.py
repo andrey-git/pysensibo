@@ -55,13 +55,13 @@ class SensiboDevice:
     update_available: bool
     schedules: dict[str, Schedules] | None
     pure_boost_enabled: bool | None
-    pure_boost_attr: dict | None
-    timer_on: bool | None
-    timer_attr: dict | None
-    smart_on: bool | None
-    smart_attr: dict | None
-    filters_clean: bool | None
-    filters_attr: dict | None
+    pure_boost_attr: dict
+    timer_on: bool
+    timer_attr: dict
+    smart_on: bool
+    smart_attr: dict
+    filters_clean: bool
+    filters_attr: dict
 
 
 @dataclass

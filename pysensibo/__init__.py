@@ -149,7 +149,7 @@ class SensiboClient:
             # Add information for pure devices
             pure_conf: dict = dev["pureBoostConfig"]
             pure_boost_enabled = None
-            pure_boost_attr = None
+            pure_boost_attr = {}
             if dev["productModel"] == "pure":
                 pure_boost_enabled = pure_conf.get("enabled") if pure_conf else False
                 pure_boost_attr = {
@@ -186,7 +186,7 @@ class SensiboClient:
             # Timer
             timer: dict = dev["timer"]
             timer_on = False
-            timer_attr = None
+            timer_attr = {}
             if dev["productModel"] != "pure":
                 timer_on = timer.get("isEnabled") if timer else False
                 timer_attr = {
@@ -198,7 +198,7 @@ class SensiboClient:
             # Smartmode
             smart: dict = dev["smartMode"]
             smart_on = False
-            smart_attr = None
+            smart_attr = {}
             if dev["productModel"] != "pure":
                 smart_on = smart.get("enabled") if smart else False
                 smart_attr = {
