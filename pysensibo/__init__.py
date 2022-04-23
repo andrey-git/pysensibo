@@ -146,7 +146,7 @@ class SensiboClient:
                     )
 
             # Add information for pure devices
-            pure_conf: dict = dev["pureBoostConfig"]
+            pure_conf: dict = dev["pureBoostConfig"] if dev["pureBoostConfig"] else {}
             pure_boost_enabled = None
             pure_sensitivity = None
             pure_ac_integration = None
@@ -169,15 +169,13 @@ class SensiboClient:
             )
 
             # Filters
-            filters: dict = dev["filtersCleaning"]
-            filter_clean = (
-                filters.get("shouldCleanFilters", False) if filters else False
-            )
-            clean_time: dict | None = filters.get("lastFiltersCleanTime")
+            filters: dict = dev["filtersCleaning"] if dev["filtersCleaning"] else {}
+            filter_clean = filters.get("shouldCleanFilters", False)
+            clean_time: dict = filters.get("lastFiltersCleanTime") or {}
             filter_last_reset = clean_time.get("time") if clean_time else None
 
             # Timer
-            timer: dict = dev["timer"]
+            timer: dict = dev["timer"] if dev["timer"] else {}
             timer_on = None
             timer_id = None
             timer_state_on = None
@@ -186,12 +184,11 @@ class SensiboClient:
                 timer_on = timer.get("isEnabled", False)
             timer_id = timer.get("id")
             timer_state: dict | None = timer.get("acState")
-            if timer_state:
-                timer_state_on = timer_state.get("on")
+            timer_state_on = timer_state.get("on") if timer_state else None
             timer_time = timer.get("targetTime")
 
             # Smartmode
-            smart: dict = dev["smartMode"]
+            smart: dict = dev["smartMode"] if dev["smartMode"] else {}
             smart_on = None
             if dev["productModel"] != "pure":
                 smart_on = smart.get("enabled", False)
