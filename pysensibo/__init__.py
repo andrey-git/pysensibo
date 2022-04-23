@@ -116,8 +116,9 @@ class SensiboClient:
             fw_type = dev["firmwareType"]
             model = dev["productModel"]
 
-            calibration_temp = dev["sensorsCalibration"].get("temperature")
-            calibration_hum = dev["sensorsCalibration"].get("humidity")
+            calibration: dict = dev["sensorsCalibration"]
+            calibration_temp = calibration.get("temperature")
+            calibration_hum = calibration.get("humidity")
 
             # Sky plus supports functionality to use motion sensor as sensor for temp and humidity
             if main_sensor := dev["mainMeasurementsSensor"]:
@@ -127,11 +128,13 @@ class SensiboClient:
 
             motion_sensors: dict[str, MotionSensor] = {}
             if dev["motionSensors"]:
+                sensor: dict
                 for sensor in dev["motionSensors"]:
-                    measurement = sensor["measurements"]
+                    measurement: dict = sensor["measurements"]
+                    connection: dict = sensor["connectionStatus"]
                     motion_sensors[sensor["id"]] = MotionSensor(
                         id=sensor["id"],
-                        alive=sensor["connectionStatus"].get("isAlive"),
+                        alive=connection.get("isAlive"),
                         motion=measurement.get("motion"),
                         fw_ver=sensor.get("firmwareVersion"),
                         fw_type=sensor.get("firmwareType"),
@@ -144,7 +147,9 @@ class SensiboClient:
                     )
 
             # Add information for pure devices
-            pure_conf = dev["pureBoostConfig"]
+            pure_conf: dict = dev["pureBoostConfig"]
+            pure_boost_enabled = None
+            pure_boost_attr = None
             if dev["productModel"] == "pure":
                 pure_boost_enabled = pure_conf.get("enabled") if pure_conf else False
                 pure_boost_attr = {
@@ -171,7 +176,7 @@ class SensiboClient:
 
             # Filters
             filters: dict = dev["filtersCleaning"]
-            filters_clean = filters.get("shouldCleanFilters") if filters else None
+            filters_clean = filters.get("shouldCleanFilters") if filters else False
             filters_attr = {
                 "last_reset": filters.get("lastFiltersCleanTime", {}).get("time")
                 if filters
@@ -180,6 +185,8 @@ class SensiboClient:
 
             # Timer
             timer: dict = dev["timer"]
+            timer_on = False
+            timer_attr = None
             if dev["productModel"] != "pure":
                 timer_on = timer.get("isEnabled") if timer else False
                 timer_attr = {
@@ -190,8 +197,10 @@ class SensiboClient:
 
             # Smartmode
             smart: dict = dev["smartMode"]
+            smart_on = False
+            smart_attr = None
             if dev["productModel"] != "pure":
-                smart_on = smart.get("enabled") if smart else None
+                smart_on = smart.get("enabled") if smart else False
                 smart_attr = {
                     "type": smart.get("type") if smart else None,
                     "low_temperature_threshold": smart.get("lowTemperatureThreshold")
@@ -454,44 +463,90 @@ class SensiboClient:
             APIV2 + "/pods/{}/acStates/{}".format(uid, name), params, data
         )
 
-    async def _get(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
+    async def _get(
+        self, path: str, params: dict[str, Any], retry: bool = False
+    ) -> dict[str, Any]:
         """Make GET api call to Sensibo api."""
         async with self._session.get(path, params=params, timeout=self.timeout) as resp:
-            return await self._response(resp)
+            try:
+                return await self._response(resp)
+            except Exception as error:
+                if retry is False:
+                    asyncio.sleep(5)
+                    return self._get(path, params, True)
+                raise error
 
     async def _put(
-        self, path: str, params: dict[str, Any], data: dict[str, Any]
+        self,
+        path: str,
+        params: dict[str, Any],
+        data: dict[str, Any],
+        retry: bool = False,
     ) -> dict[str, Any]:
         """Make PUT api call to Sensibo api."""
         async with self._session.put(
             path, params=params, data=json.dumps(data), timeout=self.timeout
         ) as resp:
-            return await self._response(resp)
+            try:
+                return await self._response(resp)
+            except Exception as error:
+                if retry is False:
+                    asyncio.sleep(5)
+                    return self._put(path, params, data, True)
+                raise error
 
     async def _post(
-        self, path: str, params: dict[str, Any], data: dict[str, Any]
+        self,
+        path: str,
+        params: dict[str, Any],
+        data: dict[str, Any],
+        retry: bool = False,
     ) -> dict[str, Any]:
         """Make POST api call to Sensibo api."""
         async with self._session.post(
             path, params=params, data=json.dumps(data), timeout=self.timeout
         ) as resp:
-            return await self._response(resp)
+            try:
+                return await self._response(resp)
+            except Exception as error:
+                if retry is False:
+                    asyncio.sleep(5)
+                    return self._post(path, params, data, True)
+                raise error
 
     async def _patch(
-        self, path: str, params: dict[str, Any], data: dict[str, Any]
+        self,
+        path: str,
+        params: dict[str, Any],
+        data: dict[str, Any],
+        retry: bool = False,
     ) -> dict[str, Any]:
         """Make PATCH api call to Sensibo api."""
         async with self._session.patch(
             path, params=params, data=json.dumps(data), timeout=self.timeout
         ) as resp:
-            return await self._response(resp)
+            try:
+                return await self._response(resp)
+            except Exception as error:
+                if retry is False:
+                    asyncio.sleep(5)
+                    return self._patch(path, params, data, True)
+                raise error
 
-    async def _delete(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
+    async def _delete(
+        self, path: str, params: dict[str, Any], retry: bool = False
+    ) -> dict[str, Any]:
         """Make DELETE api call to Sensibo api."""
         async with self._session.delete(
             path, params=params, timeout=self.timeout
         ) as resp:
-            return await self._response(resp)
+            try:
+                return await self._response(resp)
+            except Exception as error:
+                if retry is False:
+                    asyncio.sleep(5)
+                    return self._delete(path, params, True)
+                raise error
 
     async def _response(self, resp: ClientResponse) -> dict[str, Any]:
         """Return response from call."""

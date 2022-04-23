@@ -54,14 +54,14 @@ class SensiboDevice:
     room_occupied: bool
     update_available: bool
     schedules: dict[str, Schedules] | None
-    pure_boost_enabled: bool | None = None
-    pure_boost_attr: dict | None = None
-    timer_on: bool | None = None
-    timer_attr: dict | None = None
-    smart_on: bool | None = None
-    smart_attr: dict | None = None
-    filters_clean: bool | None = None
-    filters_attr: dict | None = None
+    pure_boost_enabled: bool | None
+    pure_boost_attr: dict | None
+    timer_on: bool | None
+    timer_attr: dict | None
+    smart_on: bool | None
+    smart_attr: dict | None
+    filters_clean: bool | None
+    filters_attr: dict | None
 
 
 @dataclass
