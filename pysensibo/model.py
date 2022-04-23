@@ -55,13 +55,22 @@ class SensiboDevice:
     update_available: bool
     schedules: dict[str, Schedules] | None
     pure_boost_enabled: bool | None
-    pure_boost_attr: dict
-    timer_on: bool
-    timer_attr: dict
-    smart_on: bool
-    smart_attr: dict
-    filters_clean: bool
-    filters_attr: dict
+    pure_sensitivity: str | None
+    pure_ac_integration: bool | None
+    pure_geo_integration: bool | None
+    pure_measure_integration: bool | None
+    timer_on: bool | None
+    timer_id: str | None
+    timer_state_on: bool | None
+    timer_time: str | None
+    smart_on: bool | None
+    smart_type: str | None
+    smart_low_temp_threshold: float | None
+    smart_high_temp_threshold: float | None
+    smart_low_state: dict | None
+    smart_high_state: dict | None
+    filter_clean: bool
+    filter_last_reset: str | None
 
 
 @dataclass
