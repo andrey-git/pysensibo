@@ -1,6 +1,5 @@
 """Python API for Sensibo."""
 from __future__ import annotations
-import asyncio
 
 import json
 from typing import Any
@@ -8,7 +7,7 @@ from typing import Any
 from aiohttp import ClientResponse, ClientSession
 
 from .exceptions import AuthenticationError, SensiboError
-from .model import MotionSensor, SensiboData, SensiboDevice, Schedules
+from .model import MotionSensor, Schedules, SensiboData, SensiboDevice
 
 APIV1 = "https://home.sensibo.com/api/v1"
 APIV2 = "https://home.sensibo.com/api/v2"
@@ -50,8 +49,8 @@ class SensiboClient:
         """Return dataclass with Sensibo Devices."""
         devices = []
         data = await self.async_get_devices()
-        for dev in data["result"]:
-            devices.append(dev)
+        for device in data["result"]:
+            devices.append(device)
 
         device_data: dict[str, SensiboDevice] = {}
         dev: dict
@@ -147,25 +146,20 @@ class SensiboClient:
                     )
 
             # Add information for pure devices
-            pure_conf: dict = dev["pureBoostConfig"]
+            pure_conf: dict = dev["pureBoostConfig"] if dev["pureBoostConfig"] else {}
             pure_boost_enabled = None
-            pure_boost_attr = {}
+            pure_sensitivity = None
+            pure_ac_integration = None
+            pure_geo_integration = None
+            pure_measure_integration = None
             if dev["productModel"] == "pure":
-                pure_boost_enabled = pure_conf.get("enabled") if pure_conf else False
-                pure_boost_attr = {
-                    "sensitivity": pure_conf.get("sensitivity") if pure_conf else "off",
-                    "ac_integration": pure_conf.get("ac_integration")
-                    if pure_conf
-                    else None,
-                    "geo_integration": pure_conf.get("geo_integration")
-                    if pure_conf
-                    else None,
-                    "measurements_integration": pure_conf.get(
-                        "measurements_integration"
-                    )
-                    if pure_conf
-                    else False,
-                }
+                pure_boost_enabled = pure_conf.get("enabled", False)
+                pure_sensitivity = pure_conf.get("sensitivity", "off")
+                pure_ac_integration = pure_conf.get("ac_integration", False)
+                pure_geo_integration = pure_conf.get("geo_integration", False)
+                pure_measure_integration = pure_conf.get(
+                    "measurements_integration", False
+                )
             pm25 = measure.get("pm25")
 
             # Binary sensors for main device
@@ -175,47 +169,34 @@ class SensiboClient:
             )
 
             # Filters
-            filters: dict = dev["filtersCleaning"]
-            filters_clean = filters.get("shouldCleanFilters") if filters else False
-            filters_attr = {
-                "last_reset": filters.get("lastFiltersCleanTime", {}).get("time")
-                if filters
-                else None
-            }
+            filters: dict = dev["filtersCleaning"] if dev["filtersCleaning"] else {}
+            filter_clean = filters.get("shouldCleanFilters", False)
+            clean_time: dict = filters.get("lastFiltersCleanTime") or {}
+            filter_last_reset = clean_time.get("time") if clean_time else None
 
             # Timer
-            timer: dict = dev["timer"]
-            timer_on = False
-            timer_attr = {}
+            timer: dict = dev["timer"] if dev["timer"] else {}
+            timer_on = None
+            timer_id = None
+            timer_state_on = None
+            timer_time = None
             if dev["productModel"] != "pure":
-                timer_on = timer.get("isEnabled") if timer else False
-                timer_attr = {
-                    "id": timer.get("id") if timer else None,
-                    "state": timer.get("acState") if timer else None,
-                    "target_time": timer.get("targetTime") if timer else None,
-                }
+                timer_on = timer.get("isEnabled", False)
+            timer_id = timer.get("id")
+            timer_state: dict | None = timer.get("acState")
+            timer_state_on = timer_state.get("on") if timer_state else None
+            timer_time = timer.get("targetTime")
 
             # Smartmode
-            smart: dict = dev["smartMode"]
-            smart_on = False
-            smart_attr = {}
+            smart: dict = dev["smartMode"] if dev["smartMode"] else {}
+            smart_on = None
             if dev["productModel"] != "pure":
-                smart_on = smart.get("enabled") if smart else False
-                smart_attr = {
-                    "type": smart.get("type") if smart else None,
-                    "low_temperature_threshold": smart.get("lowTemperatureThreshold")
-                    if smart
-                    else None,
-                    "high_temperature_threshold": smart.get("highTemperatureThreshold")
-                    if smart
-                    else None,
-                    "smart_low_state": smart.get("lowTemperatureState")
-                    if smart
-                    else None,
-                    "smart_high_state": smart.get("highTemperatureState")
-                    if smart
-                    else None,
-                }
+                smart_on = smart.get("enabled", False)
+            smart_type = smart.get("type")
+            smart_low_temp_threshold = smart.get("lowTemperatureThreshold")
+            smart_high_temp_threshold = smart.get("highTemperatureThreshold")
+            smart_low_state = smart.get("lowTemperatureState")
+            smart_high_state = smart.get("highTemperatureState")
 
             # Schedules
             schedule_list = dev["schedules"]
@@ -267,16 +248,25 @@ class SensiboClient:
                 full_capabilities=capabilities,
                 motion_sensors=motion_sensors,
                 pure_boost_enabled=pure_boost_enabled,
-                pure_boost_attr=pure_boost_attr,
+                pure_sensitivity=pure_sensitivity,
+                pure_ac_integration=pure_ac_integration,
+                pure_geo_integration=pure_geo_integration,
+                pure_measure_integration=pure_measure_integration,
                 pm25=pm25,
                 room_occupied=room_occupied,
                 update_available=update_available,
-                filters_clean=filters_clean,
-                filters_attr=filters_attr,
+                filter_clean=filter_clean,
+                filter_last_reset=filter_last_reset,
                 timer_on=timer_on,
-                timer_attr=timer_attr,
+                timer_id=timer_id,
+                timer_state_on=timer_state_on,
+                timer_time=timer_time,
                 smart_on=smart_on,
-                smart_attr=smart_attr,
+                smart_type=smart_type,
+                smart_low_temp_threshold=smart_low_temp_threshold,
+                smart_high_temp_threshold=smart_high_temp_threshold,
+                smart_low_state=smart_low_state,
+                smart_high_state=smart_high_state,
                 schedules=schedules,
             )
 
