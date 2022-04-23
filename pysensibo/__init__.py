@@ -1,5 +1,6 @@
 """Python API for Sensibo."""
 from __future__ import annotations
+import asyncio
 
 import json
 from typing import Any
@@ -7,7 +8,7 @@ from typing import Any
 from aiohttp import ClientResponse, ClientSession
 
 from .exceptions import AuthenticationError, SensiboError
-from .model import MotionSensor, SensiboData, SensiboDevice
+from .model import MotionSensor, SensiboData, SensiboDevice, Schedules
 
 APIV1 = "https://home.sensibo.com/api/v1"
 APIV2 = "https://home.sensibo.com/api/v2"
@@ -53,13 +54,15 @@ class SensiboClient:
             devices.append(dev)
 
         device_data: dict[str, SensiboDevice] = {}
+        dev: dict
         for dev in devices:
             unique_id = dev["id"]
             mac = dev["macAddress"]
             name = dev["room"]["name"]
-            temperature = dev["measurements"].get("temperature")
-            humidity = dev["measurements"].get("humidity")
-            ac_states = dev["acState"]
+            measure: dict = dev["measurements"]
+            temperature = measure.get("temperature")
+            humidity = measure.get("humidity")
+            ac_states: dict = dev["acState"]
             target_temperature = ac_states.get("targetTemperature")
             hvac_mode = ac_states.get("mode")
             running = ac_states.get("on")
@@ -72,7 +75,7 @@ class SensiboClient:
             hvac_modes = list(capabilities["modes"])
             if hvac_modes:
                 hvac_modes.append("off")
-            current_capabilities = capabilities["modes"][ac_states.get("mode")]
+            current_capabilities: dict = capabilities["modes"][ac_states.get("mode")]
             fan_modes = current_capabilities.get("fanLevels")
             swing_modes = current_capabilities.get("swing")
             horizontal_swing_modes = current_capabilities.get("horizontalSwing")
@@ -113,8 +116,9 @@ class SensiboClient:
             fw_type = dev["firmwareType"]
             model = dev["productModel"]
 
-            calibration_temp = dev["sensorsCalibration"].get("temperature")
-            calibration_hum = dev["sensorsCalibration"].get("humidity")
+            calibration: dict = dev["sensorsCalibration"]
+            calibration_temp = calibration.get("temperature")
+            calibration_hum = calibration.get("humidity")
 
             # Sky plus supports functionality to use motion sensor as sensor for temp and humidity
             if main_sensor := dev["mainMeasurementsSensor"]:
@@ -124,11 +128,13 @@ class SensiboClient:
 
             motion_sensors: dict[str, MotionSensor] = {}
             if dev["motionSensors"]:
+                sensor: dict
                 for sensor in dev["motionSensors"]:
-                    measurement = sensor["measurements"]
+                    measurement: dict = sensor["measurements"]
+                    connection: dict = sensor["connectionStatus"]
                     motion_sensors[sensor["id"]] = MotionSensor(
                         id=sensor["id"],
-                        alive=sensor["connectionStatus"].get("isAlive"),
+                        alive=connection.get("isAlive"),
                         motion=measurement.get("motion"),
                         fw_ver=sensor.get("firmwareVersion"),
                         fw_type=sensor.get("firmwareType"),
@@ -141,16 +147,90 @@ class SensiboClient:
                     )
 
             # Add information for pure devices
-            pure_conf = dev["pureBoostConfig"]
-            pure_sensitivity = pure_conf.get("sensitivity") if pure_conf else None
-            pure_boost_enabled = pure_conf.get("enabled") if pure_conf else None
-            pm25 = dev["measurements"].get("pm25")
+            pure_conf: dict = dev["pureBoostConfig"]
+            pure_boost_enabled = None
+            pure_boost_attr = {}
+            if dev["productModel"] == "pure":
+                pure_boost_enabled = pure_conf.get("enabled") if pure_conf else False
+                pure_boost_attr = {
+                    "sensitivity": pure_conf.get("sensitivity") if pure_conf else "off",
+                    "ac_integration": pure_conf.get("ac_integration")
+                    if pure_conf
+                    else None,
+                    "geo_integration": pure_conf.get("geo_integration")
+                    if pure_conf
+                    else None,
+                    "measurements_integration": pure_conf.get(
+                        "measurements_integration"
+                    )
+                    if pure_conf
+                    else False,
+                }
+            pm25 = measure.get("pm25")
 
             # Binary sensors for main device
             room_occupied = dev["roomIsOccupied"]
             update_available = bool(
                 dev["firmwareVersion"] != dev["currentlyAvailableFirmwareVersion"]
             )
+
+            # Filters
+            filters: dict = dev["filtersCleaning"]
+            filters_clean = filters.get("shouldCleanFilters") if filters else False
+            filters_attr = {
+                "last_reset": filters.get("lastFiltersCleanTime", {}).get("time")
+                if filters
+                else None
+            }
+
+            # Timer
+            timer: dict = dev["timer"]
+            timer_on = False
+            timer_attr = {}
+            if dev["productModel"] != "pure":
+                timer_on = timer.get("isEnabled") if timer else False
+                timer_attr = {
+                    "id": timer.get("id") if timer else None,
+                    "state": timer.get("acState") if timer else None,
+                    "target_time": timer.get("targetTime") if timer else None,
+                }
+
+            # Smartmode
+            smart: dict = dev["smartMode"]
+            smart_on = False
+            smart_attr = {}
+            if dev["productModel"] != "pure":
+                smart_on = smart.get("enabled") if smart else False
+                smart_attr = {
+                    "type": smart.get("type") if smart else None,
+                    "low_temperature_threshold": smart.get("lowTemperatureThreshold")
+                    if smart
+                    else None,
+                    "high_temperature_threshold": smart.get("highTemperatureThreshold")
+                    if smart
+                    else None,
+                    "smart_low_state": smart.get("lowTemperatureState")
+                    if smart
+                    else None,
+                    "smart_high_state": smart.get("highTemperatureState")
+                    if smart
+                    else None,
+                }
+
+            # Schedules
+            schedule_list = dev["schedules"]
+            schedules: dict[str, Schedules] = {}
+            if schedule_list:
+                for schedule in schedule_list:
+                    schedules[schedule["id"]] = Schedules(
+                        id=schedule["id"],
+                        enabled=schedule["isEnabled"],
+                        state_on=schedule["acState"].get("on"),
+                        state_full=schedule["acState"],
+                        days=schedule["recurringDays"],
+                        time=schedule["targetTimeLocal"],
+                        next_utc=schedule["nextTime"],
+                    )
 
             device_data[unique_id] = SensiboDevice(
                 id=unique_id,
@@ -186,11 +266,18 @@ class SensiboClient:
                 calibration_hum=calibration_hum,
                 full_capabilities=capabilities,
                 motion_sensors=motion_sensors,
-                pure_sensitivity=pure_sensitivity,
                 pure_boost_enabled=pure_boost_enabled,
+                pure_boost_attr=pure_boost_attr,
                 pm25=pm25,
                 room_occupied=room_occupied,
                 update_available=update_available,
+                filters_clean=filters_clean,
+                filters_attr=filters_attr,
+                timer_on=timer_on,
+                timer_attr=timer_attr,
+                smart_on=smart_on,
+                smart_attr=smart_attr,
+                schedules=schedules,
             )
 
         return SensiboData(raw=data, parsed=device_data)
@@ -203,6 +290,16 @@ class SensiboClient:
         """
         params = {"apiKey": self.api_key, "fields": fields}
         return await self._get(APIV2 + "/pods/{}".format(uid), params)
+
+    async def async_reset_filter(self, uid: str) -> dict[str, Any]:
+        """Reset filters.
+
+        uid: UID for device
+        """
+        params = {"apiKey": self.api_key}
+        return await self._delete(
+            APIV2 + "/pods/{}/cleanFiltersNotification".format(uid), params
+        )
 
     async def async_get_climate_react(self, uid: str) -> dict[str, Any]:
         """Get Climate React on a device.
@@ -219,6 +316,17 @@ class SensiboClient:
 
         uid: UID for device
         data: dict {enabled: boolean}
+        """
+        params = {"apiKey": self.api_key}
+        return await self._put(APIV2 + "/pods/{}/smartmode".format(uid), params, data)
+
+    async def async_set_climate_react(
+        self, uid: str, data: dict[str, bool]
+    ) -> dict[str, Any]:
+        """Set Climate React on a device.
+
+        uid: UID for device
+        data: dict according to dev["smartmode"]
         """
         params = {"apiKey": self.api_key}
         return await self._put(APIV2 + "/pods/{}/smartmode".format(uid), params, data)

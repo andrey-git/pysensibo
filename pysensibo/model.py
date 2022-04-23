@@ -49,12 +49,19 @@ class SensiboDevice:
     calibration_temp: float | None
     calibration_hum: float | None
     full_capabilities: dict[str, Any]
-    motion_sensors: dict[str, MotionSensor]
-    pure_sensitivity: str | None
-    pure_boost_enabled: bool | None
+    motion_sensors: dict[str, MotionSensor] | None
     pm25: int | None
     room_occupied: bool
     update_available: bool
+    schedules: dict[str, Schedules] | None
+    pure_boost_enabled: bool | None
+    pure_boost_attr: dict
+    timer_on: bool
+    timer_attr: dict
+    smart_on: bool
+    smart_attr: dict
+    filters_clean: bool
+    filters_attr: dict
 
 
 @dataclass
@@ -72,3 +79,16 @@ class MotionSensor:
     temperature: float | None = None
     model: str | None = None
     rssi: int | None = None
+
+
+@dataclass
+class Schedules:
+    """Dataclass for schedules."""
+
+    id: str
+    enabled: bool
+    state_on: bool | None
+    state_full: dict
+    days: list
+    time: str
+    next_utc: str
