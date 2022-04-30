@@ -1,5 +1,6 @@
 """Python API for Sensibo."""
 from __future__ import annotations
+import asyncio
 
 import json
 from typing import Any
@@ -453,44 +454,90 @@ class SensiboClient:
             APIV2 + "/pods/{}/acStates/{}".format(uid, name), params, data
         )
 
-    async def _get(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
+    async def _get(
+        self, path: str, params: dict[str, Any], retry: bool = False
+    ) -> dict[str, Any]:
         """Make GET api call to Sensibo api."""
         async with self._session.get(path, params=params, timeout=self.timeout) as resp:
-            return await self._response(resp)
+            try:
+                return await self._response(resp)
+            except Exception as error:
+                if retry is False:
+                    asyncio.sleep(5)
+                    return self._get(path, params, True)
+                raise error
 
     async def _put(
-        self, path: str, params: dict[str, Any], data: dict[str, Any]
+        self,
+        path: str,
+        params: dict[str, Any],
+        data: dict[str, Any],
+        retry: bool = False,
     ) -> dict[str, Any]:
         """Make PUT api call to Sensibo api."""
         async with self._session.put(
             path, params=params, data=json.dumps(data), timeout=self.timeout
         ) as resp:
-            return await self._response(resp)
+            try:
+                return await self._response(resp)
+            except Exception as error:
+                if retry is False:
+                    asyncio.sleep(5)
+                    return self._put(path, params, data, True)
+                raise error
 
     async def _post(
-        self, path: str, params: dict[str, Any], data: dict[str, Any]
+        self,
+        path: str,
+        params: dict[str, Any],
+        data: dict[str, Any],
+        retry: bool = False,
     ) -> dict[str, Any]:
         """Make POST api call to Sensibo api."""
         async with self._session.post(
             path, params=params, data=json.dumps(data), timeout=self.timeout
         ) as resp:
-            return await self._response(resp)
+            try:
+                return await self._response(resp)
+            except Exception as error:
+                if retry is False:
+                    asyncio.sleep(5)
+                    return self._post(path, params, data, True)
+                raise error
 
     async def _patch(
-        self, path: str, params: dict[str, Any], data: dict[str, Any]
+        self,
+        path: str,
+        params: dict[str, Any],
+        data: dict[str, Any],
+        retry: bool = False,
     ) -> dict[str, Any]:
         """Make PATCH api call to Sensibo api."""
         async with self._session.patch(
             path, params=params, data=json.dumps(data), timeout=self.timeout
         ) as resp:
-            return await self._response(resp)
+            try:
+                return await self._response(resp)
+            except Exception as error:
+                if retry is False:
+                    asyncio.sleep(5)
+                    return self._patch(path, params, data, True)
+                raise error
 
-    async def _delete(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
+    async def _delete(
+        self, path: str, params: dict[str, Any], retry: bool = False
+    ) -> dict[str, Any]:
         """Make DELETE api call to Sensibo api."""
         async with self._session.delete(
             path, params=params, timeout=self.timeout
         ) as resp:
-            return await self._response(resp)
+            try:
+                return await self._response(resp)
+            except Exception as error:
+                if retry is False:
+                    asyncio.sleep(5)
+                    return self._delete(path, params, True)
+                raise error
 
     async def _response(self, resp: ClientResponse) -> dict[str, Any]:
         """Return response from call."""
