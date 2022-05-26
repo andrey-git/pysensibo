@@ -28,4 +28,5 @@ setup(
     author="andrey-git",
     author_email="andrey-git@users.noreply.github.com",
     packages=find_packages(),
+    package_data={"pysensibo": ["py.typed"]},
 )
