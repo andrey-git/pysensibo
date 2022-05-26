@@ -54,15 +54,15 @@ class SensiboClient:
             devices.append(device)
 
         device_data: dict[str, SensiboDevice] = {}
-        dev: dict
+        dev: dict[str, Any]
         for dev in devices:
             unique_id = dev["id"]
             mac = dev["macAddress"]
             name = dev["room"]["name"]
-            measure: dict = dev["measurements"]
+            measure: dict[str, Any] = dev["measurements"]
             temperature = measure.get("temperature")
             humidity = measure.get("humidity")
-            ac_states: dict = dev["acState"]
+            ac_states: dict[str, Any] = dev["acState"]
             target_temperature = ac_states.get("targetTemperature")
             hvac_mode = ac_states.get("mode")
             running = ac_states.get("on")
@@ -75,7 +75,9 @@ class SensiboClient:
             hvac_modes = list(capabilities["modes"])
             if hvac_modes:
                 hvac_modes.append("off")
-            current_capabilities: dict = capabilities["modes"][ac_states.get("mode")]
+            current_capabilities: dict[str, Any] = capabilities["modes"][
+                ac_states.get("mode")
+            ]
             fan_modes = current_capabilities.get("fanLevels")
             swing_modes = current_capabilities.get("swing")
             horizontal_swing_modes = current_capabilities.get("horizontalSwing")
@@ -116,7 +118,7 @@ class SensiboClient:
             fw_type = dev["firmwareType"]
             model = dev["productModel"]
 
-            calibration: dict = dev["sensorsCalibration"]
+            calibration: dict[str, float] = dev["sensorsCalibration"]
             calibration_temp = calibration.get("temperature")
             calibration_hum = calibration.get("humidity")
 
@@ -128,10 +130,10 @@ class SensiboClient:
 
             motion_sensors: dict[str, MotionSensor] = {}
             if dev["motionSensors"]:
-                sensor: dict
+                sensor: dict[str, Any]
                 for sensor in dev["motionSensors"]:
-                    measurement: dict = sensor["measurements"]
-                    connection: dict = sensor["connectionStatus"]
+                    measurement: dict[str, Any] = sensor["measurements"]
+                    connection: dict[str, Any] = sensor["connectionStatus"]
                     motion_sensors[sensor["id"]] = MotionSensor(
                         id=sensor["id"],
                         alive=connection.get("isAlive"),
@@ -147,12 +149,14 @@ class SensiboClient:
                     )
 
             # Add information for pure devices
-            pure_conf: dict = dev["pureBoostConfig"] if dev["pureBoostConfig"] else {}
-            pure_boost_enabled = None
-            pure_sensitivity = None
-            pure_ac_integration = None
-            pure_geo_integration = None
-            pure_measure_integration = None
+            pure_conf: dict[str, Any] = (
+                dev["pureBoostConfig"] if dev["pureBoostConfig"] else {}
+            )
+            pure_boost_enabled: bool | None = None
+            pure_sensitivity: str | None = None
+            pure_ac_integration: bool | None = None
+            pure_geo_integration: bool | None = None
+            pure_measure_integration: bool | None = None
             if dev["productModel"] == "pure":
                 pure_boost_enabled = pure_conf.get("enabled", False)
                 pure_sensitivity = pure_conf.get("sensitivity", "off")
@@ -170,13 +174,17 @@ class SensiboClient:
             )
 
             # Filters
-            filters: dict = dev["filtersCleaning"] if dev["filtersCleaning"] else {}
-            filter_clean = filters.get("shouldCleanFilters", False)
-            clean_time: dict = filters.get("lastFiltersCleanTime") or {}
-            filter_last_reset = clean_time.get("time") if clean_time else None
+            filters: dict[str, Any] = (
+                dev["filtersCleaning"] if dev["filtersCleaning"] else {}
+            )
+            filter_clean: bool = filters.get("shouldCleanFilters", False)
+            clean_time: dict[str, Any] = filters.get("lastFiltersCleanTime") or {}
+            filter_last_reset: str | None = (
+                clean_time.get("time") if clean_time else None
+            )
 
             # Timer
-            timer: dict = dev["timer"] if dev["timer"] else {}
+            timer: dict[str, Any] = dev["timer"] if dev["timer"] else {}
             timer_on = None
             timer_id = None
             timer_state_on = None
@@ -184,12 +192,12 @@ class SensiboClient:
             if dev["productModel"] != "pure":
                 timer_on = timer.get("isEnabled", False)
             timer_id = timer.get("id")
-            timer_state: dict | None = timer.get("acState")
+            timer_state: dict[str, Any] | None = timer.get("acState")
             timer_state_on = timer_state.get("on") if timer_state else None
             timer_time = timer.get("targetTime")
 
             # Smartmode
-            smart: dict = dev["smartMode"] if dev["smartMode"] else {}
+            smart: dict[str, Any] = dev["smartMode"] if dev["smartMode"] else {}
             smart_on = None
             if dev["productModel"] != "pure":
                 smart_on = smart.get("enabled", False)
@@ -464,7 +472,7 @@ class SensiboClient:
             except Exception as error:
                 if retry is False:
                     await asyncio.sleep(5)
-                    return self._get(path, params, True)
+                    return await self._get(path, params, True)
                 raise error
 
     async def _put(
@@ -483,7 +491,7 @@ class SensiboClient:
             except Exception as error:
                 if retry is False:
                     await asyncio.sleep(5)
-                    return self._put(path, params, data, True)
+                    return await self._put(path, params, data, True)
                 raise error
 
     async def _post(
@@ -502,7 +510,7 @@ class SensiboClient:
             except Exception as error:
                 if retry is False:
                     await asyncio.sleep(5)
-                    return self._post(path, params, data, True)
+                    return await self._post(path, params, data, True)
                 raise error
 
     async def _patch(
@@ -521,7 +529,7 @@ class SensiboClient:
             except Exception as error:
                 if retry is False:
                     await asyncio.sleep(5)
-                    return self._patch(path, params, data, True)
+                    return await self._patch(path, params, data, True)
                 raise error
 
     async def _delete(
@@ -536,7 +544,7 @@ class SensiboClient:
             except Exception as error:
                 if retry is False:
                     await asyncio.sleep(5)
-                    return self._delete(path, params, True)
+                    return await self._delete(path, params, True)
                 raise error
 
     async def _response(self, resp: ClientResponse) -> dict[str, Any]:
