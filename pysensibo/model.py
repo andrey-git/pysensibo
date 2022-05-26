@@ -31,11 +31,11 @@ class SensiboDevice:
     horizontal_swing_mode: str | None
     light_mode: str | None
     available: bool
-    hvac_modes: list[str | None]
-    fan_modes: list[str | None] | None
-    swing_modes: list[str | None] | None
-    horizontal_swing_modes: list[str | None] | None
-    light_modes: list[str | None] | None
+    hvac_modes: list[str] | None
+    fan_modes: list[str] | None
+    swing_modes: list[str] | None
+    horizontal_swing_modes: list[str] | None
+    light_modes: list[str] | None
     temp_unit: str | None
     temp_list: list[int]
     temp_step: int
@@ -67,8 +67,8 @@ class SensiboDevice:
     smart_type: str | None
     smart_low_temp_threshold: float | None
     smart_high_temp_threshold: float | None
-    smart_low_state: dict | None
-    smart_high_state: dict | None
+    smart_low_state: dict[str, Any] | None
+    smart_high_state: dict[str, Any] | None
     filter_clean: bool
     filter_last_reset: str | None
 
@@ -97,7 +97,7 @@ class Schedules:
     id: str
     enabled: bool
     state_on: bool | None
-    state_full: dict
-    days: list
+    state_full: dict[str, Any]
+    days: list[str]
     time: str
     next_utc: str
