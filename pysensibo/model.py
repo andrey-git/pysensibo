@@ -31,11 +31,11 @@ class SensiboDevice:
     horizontal_swing_mode: str | None
     light_mode: str | None
     available: bool
-    hvac_modes: list[str | None]
-    fan_modes: list[str | None] | None
-    swing_modes: list[str | None] | None
-    horizontal_swing_modes: list[str | None] | None
-    light_modes: list[str | None] | None
+    hvac_modes: list[str] | None
+    fan_modes: list[str] | None
+    swing_modes: list[str] | None
+    horizontal_swing_modes: list[str] | None
+    light_modes: list[str] | None
     temp_unit: str | None
     temp_list: list[int]
     temp_step: int
