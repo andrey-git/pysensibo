@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 print(find_packages())
 setup(
     name="pysensibo",
-    version="1.0.14",
+    version="1.0.15",
     description="asyncio-friendly python API for Sensibo",
     long_description="asyncio-friendly python API for Sensibo"
     "(https://sensibo.com). Requires Python 3.4+",
@@ -24,7 +24,7 @@ setup(
     ],
     keywords="Sensibo",
     install_requires=["aiohttp"],
-    zip_safe=True,
+    zip_safe=False,
     author="andrey-git",
     author_email="andrey-git@users.noreply.github.com",
     packages=find_packages(),
