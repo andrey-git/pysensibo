@@ -1,6 +1,7 @@
 """Python API for Sensibo."""
 from __future__ import annotations
 import asyncio
+from datetime import datetime, timezone
 
 import json
 from typing import Any
@@ -179,8 +180,13 @@ class SensiboClient:
             )
             filter_clean: bool = filters.get("shouldCleanFilters", False)
             clean_time: dict[str, Any] = filters.get("lastFiltersCleanTime") or {}
-            filter_last_reset: str | None = (
-                clean_time.get("time") if clean_time else None
+            clean_time_str: str | None = clean_time.get("time")
+            filter_last_reset: datetime | None = (
+                datetime.strptime(clean_time_str, "%Y-%m-%dT%H:%M:%SZ").replace(
+                    tzinfo=timezone.utc
+                )
+                if clean_time_str
+                else None
             )
 
             # Timer
@@ -191,10 +197,17 @@ class SensiboClient:
             timer_time = None
             if dev["productModel"] != "pure":
                 timer_on = timer.get("isEnabled", False)
-            timer_id = timer.get("id")
-            timer_state: dict[str, Any] | None = timer.get("acState")
-            timer_state_on = timer_state.get("on") if timer_state else None
-            timer_time = timer.get("targetTime")
+                timer_id = timer.get("id")
+                timer_state: dict[str, Any] | None = timer.get("acState")
+                timer_state_on = timer_state.get("on") if timer_state else None
+                timer_time_str: str | None = timer.get("targetTime")
+                timer_time = (
+                    datetime.strptime(timer_time_str, "%Y-%m-%dT%H:%M:%S").replace(
+                        tzinfo=timezone.utc
+                    )
+                    if timer_time_str
+                    else None
+                )
 
             # Smartmode
             smart: dict[str, Any] = dev["smartMode"] if dev["smartMode"] else {}
@@ -212,6 +225,10 @@ class SensiboClient:
             schedules: dict[str, Schedules] = {}
             if schedule_list:
                 for schedule in schedule_list:
+                    next_utc_str: str = schedule["nextTime"]
+                    next_utc = datetime.strptime(
+                        next_utc_str, "%Y-%m-%dT%H:%M:%S"
+                    ).replace(tzinfo=timezone.utc)
                     schedules[schedule["id"]] = Schedules(
                         id=schedule["id"],
                         enabled=schedule["isEnabled"],
@@ -219,7 +236,7 @@ class SensiboClient:
                         state_full=schedule["acState"],
                         days=schedule["recurringDays"],
                         time=schedule["targetTimeLocal"],
-                        next_utc=schedule["nextTime"],
+                        next_utc=next_utc,
                     )
 
             device_data[unique_id] = SensiboDevice(
