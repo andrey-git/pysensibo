@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 
@@ -62,7 +63,7 @@ class SensiboDevice:
     timer_on: bool | None
     timer_id: str | None
     timer_state_on: bool | None
-    timer_time: str | None
+    timer_time: datetime | None
     smart_on: bool | None
     smart_type: str | None
     smart_low_temp_threshold: float | None
@@ -70,7 +71,7 @@ class SensiboDevice:
     smart_low_state: dict[str, Any] | None
     smart_high_state: dict[str, Any] | None
     filter_clean: bool
-    filter_last_reset: str | None
+    filter_last_reset: datetime | None
 
 
 @dataclass
@@ -100,4 +101,4 @@ class Schedules:
     state_full: dict[str, Any]
     days: list[str]
     time: str
-    next_utc: str
+    next_utc: datetime
