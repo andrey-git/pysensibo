@@ -158,14 +158,16 @@ class SensiboClient:
             pure_ac_integration: bool | None = None
             pure_geo_integration: bool | None = None
             pure_measure_integration: bool | None = None
+            pure_prime_integration: bool | None = None
             if dev["productModel"] == "pure":
                 pure_boost_enabled = pure_conf.get("enabled", False)
-                pure_sensitivity = pure_conf.get("sensitivity", "off")
+                pure_sensitivity = pure_conf.get("sensitivity", "n").lower()
                 pure_ac_integration = pure_conf.get("ac_integration", False)
                 pure_geo_integration = pure_conf.get("geo_integration", False)
                 pure_measure_integration = pure_conf.get(
                     "measurements_integration", False
                 )
+                pure_prime_integration = pure_conf.get("prime_integration", False)
             pm25 = measure.get("pm25")
 
             # Binary sensors for main device
@@ -278,6 +280,8 @@ class SensiboClient:
                 pure_ac_integration=pure_ac_integration,
                 pure_geo_integration=pure_geo_integration,
                 pure_measure_integration=pure_measure_integration,
+                pure_prime_integration=pure_prime_integration,
+                pure_conf=pure_conf,
                 pm25=pm25,
                 room_occupied=room_occupied,
                 update_available=update_available,
@@ -440,6 +444,17 @@ class SensiboClient:
         return await self._post(
             APIV2 + "/pods/{}/calibration/".format(uid), params, data
         )
+
+    async def async_set_pureboost(
+        self, uid: str, data: dict[str, float]
+    ) -> dict[str, Any]:
+        """Set Pure Boost Settings.
+
+        uid: UID for device
+        data: dict as pure_conf
+        """
+        params = {"apiKey": self.api_key}
+        return await self._put(APIV2 + "/pods/{}/pureboost".format(uid), params, data)
 
     async def async_set_ac_states(
         self,

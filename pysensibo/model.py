@@ -60,6 +60,8 @@ class SensiboDevice:
     pure_ac_integration: bool | None
     pure_geo_integration: bool | None
     pure_measure_integration: bool | None
+    pure_prime_integration: bool | None
+    pure_conf: dict[str, Any] | None
     timer_on: bool | None
     timer_id: str | None
     timer_state_on: bool | None
