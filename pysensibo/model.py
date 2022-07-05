@@ -23,7 +23,10 @@ class SensiboDevice:
     name: str
     ac_states: dict[str, Any]
     temp: float | None
+    feelslike: float | None
     humidity: int | None
+    tvoc: int | None
+    co2: int | None
     target_temp: int | None
     hvac_mode: str | None
     device_on: bool | None

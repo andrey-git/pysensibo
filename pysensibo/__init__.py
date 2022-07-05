@@ -62,7 +62,13 @@ class SensiboClient:
             name = dev["room"]["name"]
             measure: dict[str, Any] = dev["measurements"]
             temperature = measure.get("temperature")
+            feelslike = measure.get("feelsLike")
             humidity = measure.get("humidity")
+
+            # Add in new sensors for AirQ model
+            tvoc = measure.get("tvoc")
+            co2 = measure.get("co2")
+
             ac_states: dict[str, Any] = dev["acState"]
             target_temperature = ac_states.get("targetTemperature")
             hvac_mode = ac_states.get("mode")
@@ -247,7 +253,10 @@ class SensiboClient:
                 name=name,
                 ac_states=ac_states,
                 temp=temperature,
+                feelslike=feelslike,
                 humidity=humidity,
+                tvoc=tvoc,
+                co2=co2,
                 target_temp=target_temperature,
                 hvac_mode=hvac_mode,
                 device_on=running,
