@@ -4,6 +4,7 @@ import asyncio
 from datetime import datetime, timezone
 
 import json
+import logging
 from typing import Any
 
 from aiohttp import ClientResponse, ClientSession
@@ -17,6 +18,8 @@ APIV2 = "https://home.sensibo.com/api/v2"
 TIMEOUT = 5 * 60
 HTTP_AUTH_FAILED_STATUS_CODES = {401, 403}
 MAX_POSSIBLE_STEP = 1000
+
+LOGGER = logging.getLogger(__name__)
 
 
 class SensiboClient:
@@ -507,10 +510,12 @@ class SensiboClient:
         self, path: str, params: dict[str, Any], retry: int = 3
     ) -> dict[str, Any]:
         """Make GET api call to Sensibo api."""
+        LOGGER.debug("Attempting get with path %s and parameters %s", path, params)
         async with self._session.get(path, params=params, timeout=self.timeout) as resp:
             try:
                 return await self._response(resp)
             except Exception as error:
+                LOGGER.debug("Retry %d on path %s", 4 - retry, path)
                 if retry > 0:
                     await asyncio.sleep(7)
                     return await self._get(path, params, retry - 1)
