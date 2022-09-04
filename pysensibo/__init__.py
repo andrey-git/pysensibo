@@ -504,16 +504,16 @@ class SensiboClient:
         )
 
     async def _get(
-        self, path: str, params: dict[str, Any], retry: bool = False
+        self, path: str, params: dict[str, Any], retry: int = 3
     ) -> dict[str, Any]:
         """Make GET api call to Sensibo api."""
         async with self._session.get(path, params=params, timeout=self.timeout) as resp:
             try:
                 return await self._response(resp)
             except Exception as error:
-                if retry is False:
-                    await asyncio.sleep(5)
-                    return await self._get(path, params, True)
+                if retry > 0:
+                    await asyncio.sleep(7)
+                    return await self._get(path, params, retry - 1)
                 raise error
 
     async def _put(
