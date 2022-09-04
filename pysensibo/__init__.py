@@ -511,15 +511,17 @@ class SensiboClient:
     ) -> dict[str, Any]:
         """Make GET api call to Sensibo api."""
         LOGGER.debug("Attempting get with path %s and parameters %s", path, params)
-        async with self._session.get(path, params=params, timeout=self.timeout) as resp:
-            try:
+        try:
+            async with self._session.get(
+                path, params=params, timeout=self.timeout
+            ) as resp:
                 return await self._response(resp)
-            except Exception as error:
-                LOGGER.debug("Retry %d on path %s", 4 - retry, path)
-                if retry > 0:
-                    await asyncio.sleep(7)
-                    return await self._get(path, params, retry - 1)
-                raise error
+        except Exception as error:
+            LOGGER.debug("Retry %d on path %s", 4 - retry, path)
+            if retry > 0:
+                await asyncio.sleep(7)
+                return await self._get(path, params, retry - 1)
+            raise error
 
     async def _put(
         self,
@@ -529,16 +531,16 @@ class SensiboClient:
         retry: bool = False,
     ) -> dict[str, Any]:
         """Make PUT api call to Sensibo api."""
-        async with self._session.put(
-            path, params=params, data=json.dumps(data), timeout=self.timeout
-        ) as resp:
-            try:
+        try:
+            async with self._session.put(
+                path, params=params, data=json.dumps(data), timeout=self.timeout
+            ) as resp:
                 return await self._response(resp)
-            except Exception as error:
-                if retry is False:
-                    await asyncio.sleep(5)
-                    return await self._put(path, params, data, True)
-                raise error
+        except Exception as error:
+            if retry is False:
+                await asyncio.sleep(5)
+                return await self._put(path, params, data, True)
+            raise error
 
     async def _post(
         self,
@@ -548,16 +550,17 @@ class SensiboClient:
         retry: bool = False,
     ) -> dict[str, Any]:
         """Make POST api call to Sensibo api."""
-        async with self._session.post(
-            path, params=params, data=json.dumps(data), timeout=self.timeout
-        ) as resp:
-            try:
+
+        try:
+            async with self._session.post(
+                path, params=params, data=json.dumps(data), timeout=self.timeout
+            ) as resp:
                 return await self._response(resp)
-            except Exception as error:
-                if retry is False:
-                    await asyncio.sleep(5)
-                    return await self._post(path, params, data, True)
-                raise error
+        except Exception as error:
+            if retry is False:
+                await asyncio.sleep(5)
+                return await self._post(path, params, data, True)
+            raise error
 
     async def _patch(
         self,
@@ -567,31 +570,33 @@ class SensiboClient:
         retry: bool = False,
     ) -> dict[str, Any]:
         """Make PATCH api call to Sensibo api."""
-        async with self._session.patch(
-            path, params=params, data=json.dumps(data), timeout=self.timeout
-        ) as resp:
-            try:
+
+        try:
+            async with self._session.patch(
+                path, params=params, data=json.dumps(data), timeout=self.timeout
+            ) as resp:
                 return await self._response(resp)
-            except Exception as error:
-                if retry is False:
-                    await asyncio.sleep(5)
-                    return await self._patch(path, params, data, True)
-                raise error
+        except Exception as error:
+            if retry is False:
+                await asyncio.sleep(5)
+                return await self._patch(path, params, data, True)
+            raise error
 
     async def _delete(
         self, path: str, params: dict[str, Any], retry: bool = False
     ) -> dict[str, Any]:
         """Make DELETE api call to Sensibo api."""
-        async with self._session.delete(
-            path, params=params, timeout=self.timeout
-        ) as resp:
-            try:
+
+        try:
+            async with self._session.delete(
+                path, params=params, timeout=self.timeout
+            ) as resp:
                 return await self._response(resp)
-            except Exception as error:
-                if retry is False:
-                    await asyncio.sleep(5)
-                    return await self._delete(path, params, True)
-                raise error
+        except Exception as error:
+            if retry is False:
+                await asyncio.sleep(5)
+                return await self._delete(path, params, True)
+            raise error
 
     async def _response(self, resp: ClientResponse) -> dict[str, Any]:
         """Return response from call."""
