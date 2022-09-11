@@ -353,7 +353,7 @@ class SensiboClient:
         return await self._put(APIV2 + "/pods/{}/smartmode".format(uid), params, data)
 
     async def async_set_climate_react(
-        self, uid: str, data: dict[str, bool]
+        self, uid: str, data: dict[str, Any]
     ) -> dict[str, Any]:
         """Set Climate React on a device.
 
@@ -361,7 +361,7 @@ class SensiboClient:
         data: dict according to dev["smartmode"]
         """
         params = {"apiKey": self.api_key}
-        return await self._put(APIV2 + "/pods/{}/smartmode".format(uid), params, data)
+        return await self._post(APIV2 + "/pods/{}/smartmode".format(uid), params, data)
 
     async def async_get_timer(self, uid: str) -> dict[str, Any]:
         """Get Timer on a device.
