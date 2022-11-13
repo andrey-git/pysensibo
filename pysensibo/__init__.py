@@ -247,6 +247,7 @@ class SensiboClient:
                     schedules[schedule["id"]] = Schedules(
                         id=schedule["id"],
                         enabled=schedule["isEnabled"],
+                        name=schedule["name"],
                         state_on=schedule["acState"].get("on"),
                         state_full=schedule["acState"],
                         days=schedule["recurringDays"],

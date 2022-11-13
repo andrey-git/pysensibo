@@ -104,6 +104,7 @@ class Schedules:
 
     id: str
     enabled: bool
+    name: str | None
     state_on: bool | None
     state_full: dict[str, Any]
     days: list[str]
