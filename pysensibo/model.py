@@ -54,7 +54,7 @@ class SensiboDevice:
     calibration_hum: float | None
     full_capabilities: dict[str, Any]
     motion_sensors: dict[str, MotionSensor] | None
-    pm25: int | None
+    pm25: float | None
     room_occupied: bool
     update_available: bool
     schedules: dict[str, Schedules] | None
@@ -77,6 +77,8 @@ class SensiboDevice:
     smart_high_state: dict[str, Any] | None
     filter_clean: bool
     filter_last_reset: datetime | None
+    etoh: float | None
+    iaq: int | None
 
 
 @dataclass
