@@ -68,9 +68,13 @@ class SensiboClient:
             feelslike = measure.get("feelsLike")
             humidity = measure.get("humidity")
 
-            # Add in new sensors for AirQ model
+            # Add in new sensors for AirQ + Element model
             tvoc = measure.get("tvoc")
             co2 = measure.get("co2")
+
+            # Add information for Element model
+            etoh = measure.get("etoh")
+            iaq = measure.get("iaq")
 
             ac_states: dict[str, Any] = dev["acState"]
             target_temperature = ac_states.get("targetTemperature")
@@ -310,6 +314,8 @@ class SensiboClient:
                 smart_low_state=smart_low_state,
                 smart_high_state=smart_high_state,
                 schedules=schedules,
+                etoh=etoh,
+                iaq=iaq,
             )
 
         return SensiboData(raw=data, parsed=device_data)
