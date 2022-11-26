@@ -85,10 +85,15 @@ class SensiboClient:
             horizontal_swing_mode = ac_states.get("horizontalSwing")
             light_mode = ac_states.get("light")
             available = dev["connectionStatus"].get("isAlive", True)
-            capabilities = dev["remoteCapabilities"]
-            hvac_modes = list(capabilities["modes"])
-            if hvac_modes:
-                hvac_modes.append("off")
+            capabilities: dict[str, Any] = dev["remoteCapabilities"]
+            hvac_modes = list(capabilities.get("modes", []))
+            if not hvac_modes:
+                LOGGER.warning(
+                    "Device %s not correctly registered with Sensibo cloud. Skipping device",
+                    name,
+                )
+                continue
+            hvac_modes.append("off")
             current_capabilities: dict[str, Any] = capabilities["modes"][
                 ac_states.get("mode")
             ]
