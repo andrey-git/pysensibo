@@ -5,10 +5,10 @@ from setuptools import setup, find_packages
 print(find_packages())
 setup(
     name="pysensibo",
-    version="1.0.21",
+    version="1.0.22",
     description="asyncio-friendly python API for Sensibo",
     long_description="asyncio-friendly python API for Sensibo"
-    "(https://sensibo.com). Requires Python 3.4+",
+    "(https://sensibo.com). Requires Python 3.9+",
     url="https://github.com/andrey-git/pysensibo",
     license="MIT",
     classifiers=[
