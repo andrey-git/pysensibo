@@ -75,6 +75,7 @@ class SensiboClient:
             # Add information for Element model
             etoh = measure.get("etoh")
             iaq = measure.get("iaq")
+            rcda = measure.get("rcda")
 
             ac_states: dict[str, Any] = dev["acState"]
             target_temperature = ac_states.get("targetTemperature")
@@ -341,6 +342,7 @@ class SensiboClient:
                 schedules=schedules,
                 etoh=etoh,
                 iaq=iaq,
+                rcda=rcda,
             )
 
         return SensiboData(raw=data, parsed=device_data)

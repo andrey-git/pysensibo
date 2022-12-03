@@ -79,6 +79,7 @@ class SensiboDevice:
     filter_last_reset: datetime | None
     etoh: float | None
     iaq: int | None
+    rcda: float | None
 
 
 @dataclass
