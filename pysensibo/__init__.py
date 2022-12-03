@@ -81,8 +81,12 @@ class SensiboClient:
             hvac_mode = ac_states.get("mode")
             running = ac_states.get("on")
             fan_mode = ac_states.get("fanLevel")
-            swing_mode = ac_states.get("swing")
-            horizontal_swing_mode = ac_states.get("horizontalSwing")
+            swing_mode: str | None = ac_states.get("swing")
+            if swing_mode:
+                swing_mode = swing_mode.lower()
+            horizontal_swing_mode: str | None = ac_states.get("horizontalSwing")
+            if horizontal_swing_mode:
+                horizontal_swing_mode = horizontal_swing_mode.lower()
             light_mode = ac_states.get("light")
             available = dev["connectionStatus"].get("isAlive", True)
             capabilities: dict[str, Any] = dev["remoteCapabilities"]
@@ -97,10 +101,23 @@ class SensiboClient:
             current_capabilities: dict[str, Any] = capabilities["modes"][
                 ac_states.get("mode")
             ]
-            fan_modes = current_capabilities.get("fanLevels")
-            swing_modes = current_capabilities.get("swing")
-            horizontal_swing_modes = current_capabilities.get("horizontalSwing")
-            light_modes = current_capabilities.get("light")
+            fan_modes: list[str] | None = current_capabilities.get("fanLevels")
+            if fan_modes:
+                fan_modes = [_fan_mode.lower() for _fan_mode in fan_modes]
+            swing_modes: list[str] | None = current_capabilities.get("swing")
+            if swing_modes:
+                swing_modes = [_swing_mode.lower() for _swing_mode in swing_modes]
+            horizontal_swing_modes: list[str] | None = current_capabilities.get(
+                "horizontalSwing"
+            )
+            if horizontal_swing_modes:
+                horizontal_swing_modes = [
+                    _horizontal_mode.lower()
+                    for _horizontal_mode in horizontal_swing_modes
+                ]
+            light_modes: list[str] | None = current_capabilities.get("light")
+            if light_modes:
+                light_modes = [_light_mode.lower() for _light_mode in light_modes]
             temperature_unit_key = dev.get("temperatureUnit") or ac_states.get(
                 "temperatureUnit"
             )
@@ -234,7 +251,9 @@ class SensiboClient:
             smart_on = None
             if dev["productModel"] != "pure":
                 smart_on = smart.get("enabled", False)
-            smart_type = smart.get("type")
+            smart_type: str | None = smart.get("type")
+            if smart_type:
+                smart_type = smart_type.lower()
             smart_low_temp_threshold = smart.get("lowTemperatureThreshold")
             smart_high_temp_threshold = smart.get("highTemperatureThreshold")
             smart_low_state = smart.get("lowTemperatureState")
