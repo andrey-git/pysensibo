@@ -37,9 +37,13 @@ class SensiboDevice:
     available: bool
     hvac_modes: list[str] | None
     fan_modes: list[str] | None
+    fan_modes_to_native: dict | None
     swing_modes: list[str] | None
+    swing_modes_to_native: dict | None
     horizontal_swing_modes: list[str] | None
+    horizontal_swing_modes_to_native: dict | None
     light_modes: list[str] | None
+    light_modes_to_native: dict | None
     temp_unit: str | None
     temp_list: list[int]
     temp_step: int

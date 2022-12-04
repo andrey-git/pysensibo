@@ -81,14 +81,18 @@ class SensiboClient:
             target_temperature = ac_states.get("targetTemperature")
             hvac_mode = ac_states.get("mode")
             running = ac_states.get("on")
-            fan_mode = ac_states.get("fanLevel")
+            fan_mode: str | None = ac_states.get("fanLevel")
+            if fan_mode:
+                fan_mode = fan_mode.lower()
             swing_mode: str | None = ac_states.get("swing")
             if swing_mode:
                 swing_mode = swing_mode.lower()
             horizontal_swing_mode: str | None = ac_states.get("horizontalSwing")
             if horizontal_swing_mode:
                 horizontal_swing_mode = horizontal_swing_mode.lower()
-            light_mode = ac_states.get("light")
+            light_mode: str | None = ac_states.get("light")
+            if light_mode:
+                light_mode = light_mode.lower()
             available = dev["connectionStatus"].get("isAlive", True)
             capabilities: dict[str, Any] = dev["remoteCapabilities"]
             hvac_modes = list(capabilities.get("modes", []))
@@ -103,21 +107,38 @@ class SensiboClient:
                 ac_states.get("mode")
             ]
             fan_modes: list[str] | None = current_capabilities.get("fanLevels")
+            fan_modes_to_native: dict | None = None
             if fan_modes:
+                fan_modes_to_native = {
+                    _fan_mode.lower(): _fan_mode for _fan_mode in fan_modes
+                }
                 fan_modes = [_fan_mode.lower() for _fan_mode in fan_modes]
             swing_modes: list[str] | None = current_capabilities.get("swing")
+            swing_modes_to_native: dict | None = None
             if swing_modes:
+                swing_modes_to_native = {
+                    _swing_mode.lower(): _swing_mode for _swing_mode in swing_modes
+                }
                 swing_modes = [_swing_mode.lower() for _swing_mode in swing_modes]
             horizontal_swing_modes: list[str] | None = current_capabilities.get(
                 "horizontalSwing"
             )
+            horizontal_swing_modes_to_native: dict | None = None
             if horizontal_swing_modes:
+                horizontal_swing_modes_to_native = {
+                    _horizontal_mode.lower(): _horizontal_mode
+                    for _horizontal_mode in horizontal_swing_modes
+                }
                 horizontal_swing_modes = [
                     _horizontal_mode.lower()
                     for _horizontal_mode in horizontal_swing_modes
                 ]
             light_modes: list[str] | None = current_capabilities.get("light")
+            light_modes_to_native: dict | None = None
             if light_modes:
+                light_modes_to_native = {
+                    _light_mode.lower(): _light_mode for _light_mode in light_modes
+                }
                 light_modes = [_light_mode.lower() for _light_mode in light_modes]
             temperature_unit_key = dev.get("temperatureUnit") or ac_states.get(
                 "temperatureUnit"
@@ -300,9 +321,13 @@ class SensiboClient:
                 available=available,
                 hvac_modes=hvac_modes,
                 fan_modes=fan_modes,
+                fan_modes_to_native=fan_modes_to_native,
                 swing_modes=swing_modes,
+                swing_modes_to_native=swing_modes_to_native,
                 horizontal_swing_modes=horizontal_swing_modes,
+                horizontal_swing_modes_to_native=horizontal_swing_modes_to_native,
                 light_modes=light_modes,
+                light_modes_to_native=light_modes_to_native,
                 temp_unit=temperature_unit_key,
                 temp_list=temperatures_list,
                 temp_step=temperature_step,
