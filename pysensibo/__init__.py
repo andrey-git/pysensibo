@@ -107,25 +107,25 @@ class SensiboClient:
                 ac_states.get("mode")
             ]
             fan_modes: list[str] | None = current_capabilities.get("fanLevels")
-            fan_modes_to_native: dict | None = None
+            fan_modes_translated: dict | None = None
             if fan_modes:
-                fan_modes_to_native = {
+                fan_modes_translated = {
                     _fan_mode.lower(): _fan_mode for _fan_mode in fan_modes
                 }
                 fan_modes = [_fan_mode.lower() for _fan_mode in fan_modes]
             swing_modes: list[str] | None = current_capabilities.get("swing")
-            swing_modes_to_native: dict | None = None
+            swing_modes_translated: dict | None = None
             if swing_modes:
-                swing_modes_to_native = {
+                swing_modes_translated = {
                     _swing_mode.lower(): _swing_mode for _swing_mode in swing_modes
                 }
                 swing_modes = [_swing_mode.lower() for _swing_mode in swing_modes]
             horizontal_swing_modes: list[str] | None = current_capabilities.get(
                 "horizontalSwing"
             )
-            horizontal_swing_modes_to_native: dict | None = None
+            horizontal_swing_modes_translated: dict | None = None
             if horizontal_swing_modes:
-                horizontal_swing_modes_to_native = {
+                horizontal_swing_modes_translated = {
                     _horizontal_mode.lower(): _horizontal_mode
                     for _horizontal_mode in horizontal_swing_modes
                 }
@@ -134,9 +134,9 @@ class SensiboClient:
                     for _horizontal_mode in horizontal_swing_modes
                 ]
             light_modes: list[str] | None = current_capabilities.get("light")
-            light_modes_to_native: dict | None = None
+            light_modes_translated: dict | None = None
             if light_modes:
-                light_modes_to_native = {
+                light_modes_translated = {
                     _light_mode.lower(): _light_mode for _light_mode in light_modes
                 }
                 light_modes = [_light_mode.lower() for _light_mode in light_modes]
@@ -321,13 +321,13 @@ class SensiboClient:
                 available=available,
                 hvac_modes=hvac_modes,
                 fan_modes=fan_modes,
-                fan_modes_to_native=fan_modes_to_native,
+                fan_modes_translated=fan_modes_translated,
                 swing_modes=swing_modes,
-                swing_modes_to_native=swing_modes_to_native,
+                swing_modes_translated=swing_modes_translated,
                 horizontal_swing_modes=horizontal_swing_modes,
-                horizontal_swing_modes_to_native=horizontal_swing_modes_to_native,
+                horizontal_swing_modes_translated=horizontal_swing_modes_translated,
                 light_modes=light_modes,
-                light_modes_to_native=light_modes_to_native,
+                light_modes_translated=light_modes_translated,
                 temp_unit=temperature_unit_key,
                 temp_list=temperatures_list,
                 temp_step=temperature_step,
