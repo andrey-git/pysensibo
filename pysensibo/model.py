@@ -117,15 +117,3 @@ class Schedules:
     days: list[str]
     time: str
     next_utc: datetime
-
-
-@dataclass
-class Locations:
-    """Dataclass for schedules."""
-
-    id: str
-    aqius: int  # Air Quality
-    humidity: int  # %
-    temperature: float  # Celsius
-    winddirection: int
-    windspeed: float  # m/s
