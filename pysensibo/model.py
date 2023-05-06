@@ -84,6 +84,8 @@ class SensiboDevice:
     etoh: float | None
     iaq: int | None
     rcda: float | None
+    location_id: str
+    location_name: str
 
 
 @dataclass
@@ -115,3 +117,15 @@ class Schedules:
     days: list[str]
     time: str
     next_utc: datetime
+
+
+@dataclass
+class Locations:
+    """Dataclass for schedules."""
+
+    id: str
+    aqius: int  # Air Quality
+    humidity: int  # %
+    temperature: float  # Celsius
+    winddirection: int
+    windspeed: float  # m/s

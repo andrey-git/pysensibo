@@ -14,6 +14,7 @@ from .model import MotionSensor, Schedules, SensiboData, SensiboDevice
 
 APIV1 = "https://home.sensibo.com/api/v1"
 APIV2 = "https://home.sensibo.com/api/v2"
+API_GRAPHQL = "https://home.sensibo.com/graphql/v1"
 
 TIMEOUT = 5 * 60
 HTTP_AUTH_FAILED_STATUS_CODES = {401, 403}
@@ -42,6 +43,22 @@ class SensiboClient:
         params = {"apiKey": self.api_key}
         return await self._get(APIV1 + "/users/me", params)
 
+    async def async_get_locations(self, locations: list[str]) -> dict[str, Any]:
+        """Return location information."""
+        params = {"apiKey": self.api_key}
+        data = {
+            "query": "{     locations(uids: "
+            + locations
+            + ") {       uid      latestPollution"
+            " {         timestamp         aqius         pollutants {           type        "
+            "   conc           unit           aqius         }       }       latestWeather {  "
+            "       timestamp         temperature         humidity         windSpeed        "
+            " iconCode         windDirection       }       actions {         type        "
+            " devices {           uid         }         threshold_c         threshold_f    "
+            "   }    }   }   "
+        }
+        return await self._post(API_GRAPHQL, params, data)
+
     async def async_get_devices(self, fields: str = "*") -> dict[str, Any]:
         """Get all devices.
 
@@ -67,6 +84,8 @@ class SensiboClient:
             temperature = measure.get("temperature")
             feelslike = measure.get("feelsLike")
             humidity = measure.get("humidity")
+            location = dev["location"]["id"]
+            location_name = dev["location"]["name"]
 
             # Add in new sensors for AirQ + Element model
             tvoc = measure.get("tvoc")
@@ -368,6 +387,8 @@ class SensiboClient:
                 etoh=etoh,
                 iaq=iaq,
                 rcda=rcda,
+                location_id=location,
+                location_name=location_name
             )
 
         return SensiboData(raw=data, parsed=device_data)
