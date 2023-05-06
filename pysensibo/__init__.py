@@ -43,22 +43,6 @@ class SensiboClient:
         params = {"apiKey": self.api_key}
         return await self._get(APIV1 + "/users/me", params)
 
-    async def async_get_locations(self, locations: list[str]) -> dict[str, Any]:
-        """Return location information."""
-        params = {"apiKey": self.api_key}
-        data = {
-            "query": "{     locations(uids: "
-            + str(locations)
-            + ") {       uid      latestPollution"
-            " {         timestamp         aqius         pollutants {           type        "
-            "   conc           unit           aqius         }       }       latestWeather {  "
-            "       timestamp         temperature         humidity         windSpeed        "
-            " iconCode         windDirection       }       actions {         type        "
-            " devices {           uid         }         threshold_c         threshold_f    "
-            "   }    }   }   "
-        }
-        return await self._post(API_GRAPHQL, params, data)
-
     async def async_get_devices(self, fields: str = "*") -> dict[str, Any]:
         """Get all devices.
 
@@ -388,7 +372,7 @@ class SensiboClient:
                 iaq=iaq,
                 rcda=rcda,
                 location_id=location,
-                location_name=location_name
+                location_name=location_name,
             )
 
         return SensiboData(raw=data, parsed=device_data)
