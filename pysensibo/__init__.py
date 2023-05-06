@@ -48,7 +48,7 @@ class SensiboClient:
         params = {"apiKey": self.api_key}
         data = {
             "query": "{     locations(uids: "
-            + locations
+            + str(locations)
             + ") {       uid      latestPollution"
             " {         timestamp         aqius         pollutants {           type        "
             "   conc           unit           aqius         }       }       latestWeather {  "
