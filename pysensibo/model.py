@@ -89,6 +89,8 @@ class SensiboDevice:
     anti_mold_running: bool | None
     anti_mold_enabled: bool | None
     anti_mold_fan_time: int | None
+    auto_off: bool
+    auto_off_minutes: int | None
 
 
 @dataclass
