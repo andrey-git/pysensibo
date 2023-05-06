@@ -53,7 +53,7 @@ class SensiboClient:
 
     async def async_get_devices_data(self) -> SensiboData:
         """Return dataclass with Sensibo Devices."""
-        devices = []
+        devices: list[dict[str, Any]] = []
         data = await self.async_get_devices()
         for device in data["result"]:
             devices.append(device)
@@ -79,6 +79,12 @@ class SensiboClient:
             etoh = measure.get("etoh")
             iaq = measure.get("iaq")
             rcda = measure.get("rcda")
+
+            # Add AntiMold
+            anti_mold: dict[str, Any] = dev["antiMoldConfig"]
+            anti_mold_running = anti_mold.get("anti_mold_running")
+            anti_mold_enabled = anti_mold.get("anti_mold_running")
+            anti_mold_fan_time = anti_mold.get("fan_time")
 
             ac_states: dict[str, Any] = dev["acState"]
             target_temperature = ac_states.get("targetTemperature")
@@ -373,6 +379,9 @@ class SensiboClient:
                 rcda=rcda,
                 location_id=location,
                 location_name=location_name,
+                anti_mold_running = anti_mold_running,
+                anti_mold_enabled = anti_mold_enabled,
+                anti_mold_fan_time = anti_mold_fan_time
             )
 
         return SensiboData(raw=data, parsed=device_data)
