@@ -70,6 +70,8 @@ class SensiboClient:
             humidity = measure.get("humidity")
             location = dev["location"]["id"]
             location_name = dev["location"]["name"]
+            auto_off = dev["autoOffEnabled"]
+            auto_off_minutes = dev["autoOffMinutes"]
 
             # Add in new sensors for AirQ + Element model
             tvoc = measure.get("tvoc")
@@ -379,9 +381,11 @@ class SensiboClient:
                 rcda=rcda,
                 location_id=location,
                 location_name=location_name,
-                anti_mold_running = anti_mold_running,
-                anti_mold_enabled = anti_mold_enabled,
-                anti_mold_fan_time = anti_mold_fan_time
+                anti_mold_running=anti_mold_running,
+                anti_mold_enabled=anti_mold_enabled,
+                anti_mold_fan_time=anti_mold_fan_time,
+                auto_off=auto_off,
+                auto_off_minutes=auto_off_minutes,
             )
 
         return SensiboData(raw=data, parsed=device_data)
