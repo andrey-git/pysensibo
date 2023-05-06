@@ -83,10 +83,14 @@ class SensiboClient:
             rcda = measure.get("rcda")
 
             # Add AntiMold
-            anti_mold: dict[str, Any] = dev["antiMoldConfig"]
-            anti_mold_running = anti_mold.get("anti_mold_running")
-            anti_mold_enabled = anti_mold.get("anti_mold_running")
-            anti_mold_fan_time = anti_mold.get("fan_time")
+            anti_mold: dict[str, Any] | None = dev["antiMoldConfig"]
+            anti_mold_running = (
+                anti_mold.get("anti_mold_running") if anti_mold else None
+            )
+            anti_mold_enabled = (
+                anti_mold.get("anti_mold_running") if anti_mold else None
+            )
+            anti_mold_fan_time = anti_mold.get("fan_time") if anti_mold else None
 
             ac_states: dict[str, Any] = dev["acState"]
             target_temperature = ac_states.get("targetTemperature")
