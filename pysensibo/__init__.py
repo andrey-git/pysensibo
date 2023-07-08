@@ -293,8 +293,20 @@ class SensiboClient:
                 smart_type = smart_type.lower()
             smart_low_temp_threshold = smart.get("lowTemperatureThreshold")
             smart_high_temp_threshold = smart.get("highTemperatureThreshold")
-            smart_low_state = smart.get("lowTemperatureState")
-            smart_high_state = smart.get("highTemperatureState")
+            _smart_low_state: dict[str | Any] = smart.get("lowTemperatureState", {})
+            _smart_high_state: dict[str | Any] = smart.get("highTemperatureState", {})
+            smart_low_state: dict[str | Any] = {}
+            smart_high_state: dict[str | Any] = {}
+            if _smart_low_state:
+                for key, value in _smart_low_state.items():
+                    smart_low_state[key.lower()] = (
+                        value.lower() if isinstance(value, str) else value
+                    )
+            if _smart_high_state:
+                for key, value in _smart_high_state.items():
+                    smart_high_state[key.lower()] = (
+                        value.lower() if isinstance(value, str) else value
+                    )
 
             # Schedules
             schedule_list = dev["schedules"]
@@ -305,13 +317,20 @@ class SensiboClient:
                     next_utc = datetime.strptime(
                         next_utc_str, "%Y-%m-%dT%H:%M:%S"
                     ).replace(tzinfo=timezone.utc)
+                    _state_full: dict[str, Any] = schedule["acState"]
+                    new_state_full = {}
+                    for key, value in _state_full:
+                        new_state_full[key.lower()] = (
+                            value.lower if isinstance(value, str) else value
+                        )
+                    new_days = [val.lower() for val in schedule["recurringDays"]]
                     schedules[schedule["id"]] = Schedules(
                         id=schedule["id"],
                         enabled=schedule["isEnabled"],
                         name=schedule["name"],
                         state_on=schedule["acState"].get("on"),
-                        state_full=schedule["acState"],
-                        days=schedule["recurringDays"],
+                        state_full=new_state_full,
+                        days=new_days,
                         time=schedule["targetTimeLocal"],
                         next_utc=next_utc,
                     )
