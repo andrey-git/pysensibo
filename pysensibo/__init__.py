@@ -324,7 +324,7 @@ class SensiboClient:
                     ).replace(tzinfo=timezone.utc)
                     _state_full: dict[str, Any] = schedule["acState"]
                     new_state_full = {}
-                    for key, value in _state_full:
+                    for key, value in _state_full.items():
                         new_state_full[key.lower()] = (
                             value.lower if isinstance(value, str) else value
                         )
