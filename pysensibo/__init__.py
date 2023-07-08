@@ -330,7 +330,7 @@ class SensiboClient:
                         name=schedule["name"],
                         state_on=schedule["acState"].get("on"),
                         state_full=new_state_full,
-                        days=new_days,
+                        days=sorted(new_days),
                         time=schedule["targetTimeLocal"],
                         next_utc=next_utc,
                     )
