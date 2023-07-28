@@ -425,7 +425,7 @@ class SensiboClient:
         fields: * for all fields or specific fields
         """
         params = {"apiKey": self.api_key, "fields": fields}
-        return await self._get(APIV2 + "/pods/{}".format(uid), params)
+        return await self._get(APIV2 + f"/pods/{uid}", params)
 
     async def async_reset_filter(self, uid: str) -> dict[str, Any]:
         """Reset filters.
@@ -434,7 +434,7 @@ class SensiboClient:
         """
         params = {"apiKey": self.api_key}
         return await self._delete(
-            APIV2 + "/pods/{}/cleanFiltersNotification".format(uid), params
+            APIV2 + f"/pods/{uid}/cleanFiltersNotification", params
         )
 
     async def async_get_climate_react(self, uid: str) -> dict[str, Any]:
@@ -443,7 +443,7 @@ class SensiboClient:
         uid: UID for device
         """
         params = {"apiKey": self.api_key}
-        return await self._get(APIV2 + "/pods/{}/smartmode".format(uid), params)
+        return await self._get(APIV2 + f"/pods/{uid}/smartmode", params)
 
     async def async_enable_climate_react(
         self, uid: str, data: dict[str, bool]
@@ -454,7 +454,7 @@ class SensiboClient:
         data: dict {enabled: boolean}
         """
         params = {"apiKey": self.api_key}
-        return await self._put(APIV2 + "/pods/{}/smartmode".format(uid), params, data)
+        return await self._put(APIV2 + f"/pods/{uid}/smartmode", params, data)
 
     async def async_set_climate_react(
         self, uid: str, data: dict[str, Any]
@@ -465,7 +465,7 @@ class SensiboClient:
         data: dict according to dev["smartmode"]
         """
         params = {"apiKey": self.api_key}
-        return await self._post(APIV2 + "/pods/{}/smartmode".format(uid), params, data)
+        return await self._post(APIV2 + f"/pods/{uid}/smartmode", params, data)
 
     async def async_get_timer(self, uid: str) -> dict[str, Any]:
         """Get Timer on a device.
@@ -473,7 +473,7 @@ class SensiboClient:
         uid: UID for device
         """
         params = {"apiKey": self.api_key}
-        return await self._get(APIV1 + "/pods/{}/timer/".format(uid), params)
+        return await self._get(APIV1 + f"/pods/{uid}/timer/", params)
 
     async def async_set_timer(self, uid: str, data: dict[str, Any]) -> dict[str, Any]:
         """Set Timer on a device.
@@ -482,7 +482,7 @@ class SensiboClient:
         data: dict according to https://sensibo.github.io/#put-/pods/-device_id-/timer/
         """
         params = {"apiKey": self.api_key}
-        return await self._put(APIV1 + "/pods/{}/timer/".format(uid), params, data)
+        return await self._put(APIV1 + f"/pods/{uid}/timer/", params, data)
 
     async def async_del_timer(self, uid: str) -> dict[str, Any]:
         """Delete Timer on a device.
@@ -490,7 +490,7 @@ class SensiboClient:
         uid: UID for device
         """
         params = {"apiKey": self.api_key}
-        return await self._delete(APIV1 + "/pods/{}/timer/".format(uid), params)
+        return await self._delete(APIV1 + f"/pods/{uid}/timer/", params)
 
     async def async_get_schedules(self, uid: str) -> dict[str, Any]:
         """Get Schedules on a device.
@@ -498,7 +498,7 @@ class SensiboClient:
         uid: UID for device
         """
         params = {"apiKey": self.api_key}
-        return await self._get(APIV1 + "/pods/{}/schedules/".format(uid), params)
+        return await self._get(APIV1 + f"/pods/{uid}/schedules/", params)
 
     async def async_get_schedule(self, uid: str, schedule_id: str) -> dict[str, Any]:
         """Get Schedule on a device.
@@ -508,7 +508,7 @@ class SensiboClient:
         """
         params = {"apiKey": self.api_key}
         return await self._get(
-            APIV1 + "/pods/{}/schedules/{}".format(uid, schedule_id), params
+            APIV1 + f"/pods/{uid}/schedules/{schedule_id}", params
         )
 
     async def async_set_schedule(
@@ -521,7 +521,7 @@ class SensiboClient:
         data: dict according to https://sensibo.github.io/#post-/pods/-device_id-/schedules/
         """
         params = {"apiKey": self.api_key}
-        return await self._post(APIV1 + "/pods/{}/schedules/".format(uid), params, data)
+        return await self._post(APIV1 + f"/pods/{uid}/schedules/", params, data)
 
     async def async_enable_schedule(
         self, uid: str, schedule_id: str, data: dict[str, bool]
@@ -534,7 +534,7 @@ class SensiboClient:
         """
         params = {"apiKey": self.api_key}
         return await self._put(
-            APIV1 + "/pods/{}/schedules/{}".format(uid, schedule_id), params, data
+            APIV1 + f"/pods/{uid}/schedules/{schedule_id}", params, data
         )
 
     async def async_del_schedule(self, uid: str, schedule_id: str) -> dict[str, Any]:
@@ -545,7 +545,7 @@ class SensiboClient:
         """
         params = {"apiKey": self.api_key}
         return await self._delete(
-            APIV1 + "/pods/{}/schedules/{}".format(uid, schedule_id), params
+            APIV1 + f"/pods/{uid}/schedules/{schedule_id}", params
         )
 
     async def async_set_calibration(
@@ -558,7 +558,7 @@ class SensiboClient:
         """
         params = {"apiKey": self.api_key}
         return await self._post(
-            APIV2 + "/pods/{}/calibration/".format(uid), params, data
+            APIV2 + f"/pods/{uid}/calibration/", params, data
         )
 
     async def async_set_pureboost(
@@ -570,7 +570,7 @@ class SensiboClient:
         data: dict as pure_conf
         """
         params = {"apiKey": self.api_key}
-        return await self._put(APIV2 + "/pods/{}/pureboost".format(uid), params, data)
+        return await self._put(APIV2 + f"/pods/{uid}/pureboost", params, data)
 
     async def async_set_ac_states(
         self,
@@ -584,7 +584,7 @@ class SensiboClient:
         """
         params = {"apiKey": self.api_key}
         data = {"acState": ac_state}
-        return await self._post(APIV2 + "/pods/{}/acStates".format(uid), params, data)
+        return await self._post(APIV2 + f"/pods/{uid}/acStates", params, data)
 
     async def async_set_ac_state_property(
         self,
@@ -607,7 +607,7 @@ class SensiboClient:
         if assumed_state:
             data["reason"] = "StateCorrectionByUser"
         return await self._patch(
-            APIV2 + "/pods/{}/acStates/{}".format(uid, name), params, data
+            APIV2 + f"/pods/{uid}/acStates/{name}", params, data
         )
 
     async def _get(
