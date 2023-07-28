@@ -1,15 +1,17 @@
-from pysensibo import SensiboClient
-import aiohttp
+"""Test file for Sensibo."""
+from __future__ import annotations
+
 import asyncio
+import aiohttp
 
+from pysensibo import SensiboClient
 
-async def main(loop):
-	async with aiohttp.ClientSession(loop=loop) as session:
-		client = SensiboClient("KKL92NKBPPiJJXkoNcgiaM4tIvQbIQ",session)
-		#location = await client.async_get_locations(["APH4U3Lq3N"])
-		#print(location)
-		devices = await client.async_get_devices_data()
-		print(devices)
+async def main(event_loop):
+    """Retrieve device information from Sensibo cloud."""
+    async with aiohttp.ClientSession(loop=event_loop) as session:
+        client = SensiboClient("API_KEY",session)
+        devices = await client.async_get_devices_data()
+        print(devices)
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main(loop))
