@@ -109,7 +109,7 @@ class SensiboClient:
             if light_mode:
                 light_mode = light_mode.lower()
             available = dev["connectionStatus"].get("isAlive", True)
-            capabilities: dict[str, Any] = dev["remoteCapabilities"]
+            capabilities: dict[str, Any] = dev.get("remoteCapabilities", {})
             hvac_modes = list(capabilities.get("modes", []))
             if not hvac_modes:
                 LOGGER.warning(
