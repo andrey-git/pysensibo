@@ -1,5 +1,5 @@
 # pysensibo
-asyncio-friendly python API for Sensibo (https://sensibo.com). Requires Python 3.11+
+asyncio-friendly python API for Sensibo (https://sensibo.com). Supported on Python 3.11+
 
 Package has been made specifically for [Home Assistant](https://www.home-assistant.io/)
 
