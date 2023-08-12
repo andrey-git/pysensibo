@@ -113,15 +113,14 @@ class SensiboClient:
             hvac_modes = list(capabilities.get("modes", {}) or {})
             if not hvac_modes:
                 LOGGER.warning(
-                    "Device %s not correctly registered with Sensibo cloud. Skipping device",
+                    "Device %s not correctly registered with remote on Sensibo cloud.",
                     name,
                 )
-                continue
             hvac_modes.append("off")
             hvac_modes = sorted(hvac_modes)
-            current_capabilities: dict[str, Any] = capabilities["modes"][
-                ac_states.get("mode")
-            ]
+            current_capabilities: dict[str, Any] = capabilities.get("modes", {}).get(
+                ac_states.get("mode"), {}
+            )
             fan_modes: list[str] | None = current_capabilities.get("fanLevels")
             fan_modes_translated: dict | None = None
             if fan_modes:
@@ -164,7 +163,7 @@ class SensiboClient:
                 "temperatureUnit"
             )
             temperatures_list = (
-                current_capabilities["temperatures"]
+                current_capabilities.get("temperatures", {})
                 .get(temperature_unit_key, {})
                 .get("values", [0, 1])
             )
@@ -177,17 +176,18 @@ class SensiboClient:
 
             active_features = sorted(list(ac_states))
             full_features = set()
-            for mode in capabilities["modes"]:
-                if "temperatures" in capabilities["modes"][mode]:
-                    full_features.add("targetTemperature")
-                if "swing" in capabilities["modes"][mode]:
-                    full_features.add("swing")
-                if "fanLevels" in capabilities["modes"][mode]:
-                    full_features.add("fanLevel")
-                if "horizontalSwing" in capabilities["modes"][mode]:
-                    full_features.add("horizontalSwing")
-                if "light" in capabilities["modes"][mode]:
-                    full_features.add("light")
+            if _capabilities:=capabilities.get("modes") is not None:
+                for mode in _capabilities:
+                    if "temperatures" in _capabilities[mode]:
+                        full_features.add("targetTemperature")
+                    if "swing" in _capabilities[mode]:
+                        full_features.add("swing")
+                    if "fanLevels" in _capabilities[mode]:
+                        full_features.add("fanLevel")
+                    if "horizontalSwing" in _capabilities[mode]:
+                        full_features.add("horizontalSwing")
+                    if "light" in _capabilities[mode]:
+                        full_features.add("light")
 
             state = hvac_mode if hvac_mode else "off"
 
