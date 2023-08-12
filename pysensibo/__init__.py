@@ -176,7 +176,7 @@ class SensiboClient:
 
             active_features = sorted(list(ac_states))
             full_features = set()
-            if _capabilities:=capabilities.get("modes") is not None:
+            if _capabilities := capabilities.get("modes") is not None:
                 for mode in _capabilities:
                     if "temperatures" in _capabilities[mode]:
                         full_features.add("targetTemperature")
@@ -507,9 +507,7 @@ class SensiboClient:
         schedule_id: string value for schedule id
         """
         params = {"apiKey": self.api_key}
-        return await self._get(
-            APIV1 + f"/pods/{uid}/schedules/{schedule_id}", params
-        )
+        return await self._get(APIV1 + f"/pods/{uid}/schedules/{schedule_id}", params)
 
     async def async_set_schedule(
         self, uid: str, data: dict[str, Any]
@@ -557,9 +555,7 @@ class SensiboClient:
         data: dict temperature or humidity and float as value
         """
         params = {"apiKey": self.api_key}
-        return await self._post(
-            APIV2 + f"/pods/{uid}/calibration/", params, data
-        )
+        return await self._post(APIV2 + f"/pods/{uid}/calibration/", params, data)
 
     async def async_set_pureboost(
         self, uid: str, data: dict[str, float]
@@ -606,9 +602,7 @@ class SensiboClient:
         data = {"currentAcState": ac_state, "newValue": value}
         if assumed_state:
             data["reason"] = "StateCorrectionByUser"
-        return await self._patch(
-            APIV2 + f"/pods/{uid}/acStates/{name}", params, data
-        )
+        return await self._patch(APIV2 + f"/pods/{uid}/acStates/{name}", params, data)
 
     async def _get(
         self, path: str, params: dict[str, Any], retry: int = 3
