@@ -326,7 +326,7 @@ class SensiboClient:
                     new_state_full = {}
                     for key, value in _state_full.items():
                         new_state_full[key.lower()] = (
-                            value.lower if isinstance(value, str) else value
+                            value.lower() if isinstance(value, str) else value
                         )
                     new_days = [val.lower() for val in schedule["recurringDays"]]
                     schedules[schedule["id"]] = Schedules(
