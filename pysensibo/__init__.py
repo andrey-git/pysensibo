@@ -117,14 +117,12 @@ class SensiboClient:
                     name,
                 )
             hvac_modes.append("off")
-            hvac_modes = sorted(hvac_modes)
             current_capabilities: dict[str, Any] = capabilities.get("modes", {}).get(
                 ac_states.get("mode"), {}
             )
             fan_modes: list[str] | None = current_capabilities.get("fanLevels")
             fan_modes_translated: dict | None = None
             if fan_modes:
-                fan_modes = sorted(fan_modes)
                 fan_modes_translated = {
                     _fan_mode.lower(): _fan_mode for _fan_mode in fan_modes
                 }
@@ -132,7 +130,6 @@ class SensiboClient:
             swing_modes: list[str] | None = current_capabilities.get("swing")
             swing_modes_translated: dict | None = None
             if swing_modes:
-                swing_modes = sorted(swing_modes)
                 swing_modes_translated = {
                     _swing_mode.lower(): _swing_mode for _swing_mode in swing_modes
                 }
@@ -142,7 +139,6 @@ class SensiboClient:
             )
             horizontal_swing_modes_translated: dict | None = None
             if horizontal_swing_modes:
-                horizontal_swing_modes = sorted(horizontal_swing_modes)
                 horizontal_swing_modes_translated = {
                     _horizontal_mode.lower(): _horizontal_mode
                     for _horizontal_mode in horizontal_swing_modes
@@ -154,7 +150,6 @@ class SensiboClient:
             light_modes: list[str] | None = current_capabilities.get("light")
             light_modes_translated: dict | None = None
             if light_modes:
-                light_modes = sorted(light_modes)
                 light_modes_translated = {
                     _light_mode.lower(): _light_mode for _light_mode in light_modes
                 }
@@ -174,7 +169,7 @@ class SensiboClient:
                         diff = temperatures_list[i + 1] - temperatures_list[i]
                 temperature_step = diff
 
-            active_features = sorted(list(ac_states))
+            active_features = list(ac_states)
             full_features = set()
             if _capabilities := capabilities.get("modes") is not None:
                 for mode in _capabilities:
@@ -335,7 +330,7 @@ class SensiboClient:
                         name=schedule["name"],
                         state_on=schedule["acState"].get("on"),
                         state_full=new_state_full,
-                        days=sorted(new_days),
+                        days=new_days,
                         time=schedule["targetTimeLocal"],
                         next_utc=next_utc,
                     )
