@@ -171,7 +171,7 @@ class SensiboClient:
 
             active_features = list(ac_states)
             full_features = set()
-            if _capabilities := capabilities.get("modes") is not None:
+            if (_capabilities := capabilities.get("modes")) is not None:
                 for mode in _capabilities:
                     if "temperatures" in _capabilities[mode]:
                         full_features.add("targetTemperature")
