@@ -63,6 +63,7 @@ class SensiboClient:
         for dev in devices:
             unique_id = dev["id"]
             mac = dev["macAddress"]
+            serial = dev["serial"]
             name = dev["room"]["name"]
             measure: dict[str, Any] = dev["measurements"]
             temperature = measure.get("temperature")
@@ -338,6 +339,7 @@ class SensiboClient:
             device_data[unique_id] = SensiboDevice(
                 id=unique_id,
                 mac=mac,
+                serial=serial,
                 name=name,
                 ac_states=ac_states,
                 temp=temperature,
