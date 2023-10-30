@@ -20,6 +20,7 @@ class SensiboDevice:
 
     id: str
     mac: str
+    serial: str
     name: str
     ac_states: dict[str, Any]
     temp: float | None
