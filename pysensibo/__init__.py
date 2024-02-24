@@ -55,6 +55,9 @@ class SensiboClient:
         """Return dataclass with Sensibo Devices."""
         devices: list[dict[str, Any]] = []
         data = await self.async_get_devices()
+        if "result" not in data:
+            LOGGER.warning("No result in data from devices")
+            LOGGER.debug("Data without result: %s", data)
         for device in data["result"]:
             devices.append(device)
 
