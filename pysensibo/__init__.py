@@ -58,6 +58,7 @@ class SensiboClient:
         if "result" not in data:
             LOGGER.warning("No result in data from devices")
             LOGGER.debug("Data without result: %s", data)
+            raise SensiboError("No result in data")
         for device in data["result"]:
             devices.append(device)
 
