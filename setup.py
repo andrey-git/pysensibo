@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 print(find_packages())
 setup(
     name="pysensibo",
-    version="1.0.36",
+    version="1.0.37",
     description="asyncio-friendly python API for Sensibo",
     long_description="asyncio-friendly python API for Sensibo"
     "(https://sensibo.com). Supported on Python 3.11+",
@@ -15,6 +15,7 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
     keywords="Sensibo",
     install_requires=["aiohttp"],
