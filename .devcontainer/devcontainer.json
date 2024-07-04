@@ -1,0 +1,63 @@
+{
+    "containerEnv": {
+      "POETRY_VIRTUALENVS_IN_PROJECT": "true"
+    },
+    "runArgs": ["-e", "GIT_EDITOR=code --wait"],
+    "customizations": {
+      "codespaces": {
+        "openFiles": ["README.md"]
+      },
+      "vscode": {
+        "extensions": [
+          "ms-python.python",
+          "redhat.vscode-yaml",
+          "esbenp.prettier-vscode",
+          "GitHub.vscode-pull-request-github",
+          "charliermarsh.ruff",
+          "GitHub.vscode-github-actions",
+          "ryanluker.vscode-coverage-gutters",
+          "GitHub.copilot",
+          "ms-python.vscode-pylance"
+        ],
+        "settings": {
+          "[python]": {
+            "editor.defaultFormatter": "charliermarsh.ruff",
+            "editor.formatOnSave": true,
+            "editor.codeActionsOnSave": {
+              "source.fixAll": "explicit",
+              "source.organizeImports": "explicit"
+            }
+          },
+          "coverage-gutters.customizable.context-menu": true,
+          "coverage-gutters.customizable.status-bar-toggler-watchCoverageAndVisibleEditors-enabled": true,
+          "coverage-gutters.showGutterCoverage": false,
+          "coverage-gutters.showLineCoverage": true,
+          "coverage-gutters.xmlname": "coverage.xml",
+          "python.analysis.extraPaths": ["${workspaceFolder}"],
+          "python.defaultInterpreterPath": ".venv/bin/python",
+          "python.formatting.provider": "ruff",
+          "python.linting.enabled": true,
+          "python.linting.mypyEnabled": true,
+          "python.linting.pylintEnabled": true,
+          "python.testing.cwd": "${workspaceFolder}",
+          "python.testing.pytestArgs": ["--cov-report=xml"],
+          "python.testing.pytestEnabled": true,
+          "ruff.importStrategy": "fromEnvironment",
+          "ruff.interpreter": [".venv/bin/python"],
+          "files.trimTrailingWhitespace": true,
+          "terminal.integrated.defaultProfile.linux": "zsh"
+        }
+      }
+    },
+    "features": {
+      "ghcr.io/devcontainers-contrib/features/poetry:2": {},
+      "ghcr.io/devcontainers/features/github-cli:1": {},
+      "ghcr.io/devcontainers/features/node:1": {},
+      "ghcr.io/devcontainers/features/python:1": {
+        "installTools": false
+      }
+    },
+    "image": "mcr.microsoft.com/devcontainers/python:1-3.12",
+    "name": "pySensibo",
+    "updateContentCommand": ". ${NVM_DIR}/nvm.sh && nvm install && nvm use && npm install && poetry install && poetry check"
+  }
