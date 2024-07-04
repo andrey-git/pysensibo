@@ -1,0 +1,14 @@
+{
+  "name": "pysensibo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "asyncio-friendly python API for Sensibo",
+  "scripts": {
+    "prettier": "prettier --write **/*.{json,js,md,yml,yaml}"
+  },
+  "author": "G Johansson <goran.johansson@shiftit.se>",
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "3.3.2"
+  }
+}
