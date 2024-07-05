@@ -363,10 +363,6 @@ target/
 
 # Virtual environment
 venv/
-# Test purpose only
-ferry_test.py
 
 # Mypy cache
 .mypy_cache
-
-test.py
