@@ -1,10 +1,11 @@
 """Python API for Sensibo."""
-from __future__ import annotations
-import asyncio
-from datetime import datetime, timezone
 
+from __future__ import annotations
+
+import asyncio
 import json
 import logging
+from datetime import datetime, timezone
 from typing import Any
 
 from aiohttp import ClientResponse, ClientSession
@@ -51,7 +52,7 @@ class SensiboClient:
         params = {"apiKey": self.api_key, "fields": fields}
         return await self._get(APIV2 + "/users/me/pods", params)
 
-    async def async_get_devices_data(self) -> SensiboData:
+    async def async_get_devices_data(self) -> SensiboData:  # noqa: C901
         """Return dataclass with Sensibo Devices."""
         devices: list[dict[str, Any]] = []
         data = await self.async_get_devices()
@@ -59,8 +60,7 @@ class SensiboClient:
             LOGGER.warning("No result in data from devices")
             LOGGER.debug("Data without result: %s", data)
             raise SensiboError("No result in data")
-        for device in data["result"]:
-            devices.append(device)
+        devices = list(data["result"])
 
         device_data: dict[str, SensiboDevice] = {}
         dev: dict[str, Any]
@@ -126,14 +126,14 @@ class SensiboClient:
                 ac_states.get("mode"), {}
             )
             fan_modes: list[str] | None = current_capabilities.get("fanLevels")
-            fan_modes_translated: dict | None = None
+            fan_modes_translated: dict[str, str] | None = None
             if fan_modes:
                 fan_modes_translated = {
                     _fan_mode.lower(): _fan_mode for _fan_mode in fan_modes
                 }
                 fan_modes = [_fan_mode.lower() for _fan_mode in fan_modes]
             swing_modes: list[str] | None = current_capabilities.get("swing")
-            swing_modes_translated: dict | None = None
+            swing_modes_translated: dict[str, str] | None = None
             if swing_modes:
                 swing_modes_translated = {
                     _swing_mode.lower(): _swing_mode for _swing_mode in swing_modes
@@ -142,7 +142,7 @@ class SensiboClient:
             horizontal_swing_modes: list[str] | None = current_capabilities.get(
                 "horizontalSwing"
             )
-            horizontal_swing_modes_translated: dict | None = None
+            horizontal_swing_modes_translated: dict[str, str] | None = None
             if horizontal_swing_modes:
                 horizontal_swing_modes_translated = {
                     _horizontal_mode.lower(): _horizontal_mode
@@ -153,7 +153,7 @@ class SensiboClient:
                     for _horizontal_mode in horizontal_swing_modes
                 ]
             light_modes: list[str] | None = current_capabilities.get("light")
-            light_modes_translated: dict | None = None
+            light_modes_translated: dict[str, str] | None = None
             if light_modes:
                 light_modes_translated = {
                     _light_mode.lower(): _light_mode for _light_mode in light_modes
@@ -170,8 +170,7 @@ class SensiboClient:
             if temperatures_list:
                 diff = MAX_POSSIBLE_STEP
                 for i in range(len(temperatures_list) - 1):
-                    if temperatures_list[i + 1] - temperatures_list[i] < diff:
-                        diff = temperatures_list[i + 1] - temperatures_list[i]
+                    diff = min(diff, temperatures_list[i + 1] - temperatures_list[i])
                 temperature_step = diff
 
             active_features = list(ac_states)
@@ -298,10 +297,10 @@ class SensiboClient:
                 smart_type = smart_type.lower()
             smart_low_temp_threshold = smart.get("lowTemperatureThreshold")
             smart_high_temp_threshold = smart.get("highTemperatureThreshold")
-            _smart_low_state: dict[str | Any] = smart.get("lowTemperatureState", {})
-            _smart_high_state: dict[str | Any] = smart.get("highTemperatureState", {})
-            smart_low_state: dict[str | Any] = {}
-            smart_high_state: dict[str | Any] = {}
+            _smart_low_state: dict[str, Any] = smart.get("lowTemperatureState", {})
+            _smart_high_state: dict[str, Any] = smart.get("highTemperatureState", {})
+            smart_low_state: dict[str, Any] = {}
+            smart_high_state: dict[str, Any] = {}
             if _smart_low_state:
                 for key, value in _smart_low_state.items():
                     smart_low_state[key.lower()] = (
@@ -615,12 +614,12 @@ class SensiboClient:
                 path, params=params, timeout=self.timeout
             ) as resp:
                 return await self._response(resp)
-        except Exception as error:
+        except Exception:
             LOGGER.debug("Retry %d on path %s", 4 - retry, path)
             if retry > 0:
                 await asyncio.sleep(7)
                 return await self._get(path, params, retry - 1)
-            raise error
+            raise
 
     async def _put(
         self,
@@ -635,11 +634,11 @@ class SensiboClient:
                 path, params=params, data=json.dumps(data), timeout=self.timeout
             ) as resp:
                 return await self._response(resp)
-        except Exception as error:
+        except Exception:
             if retry is False:
                 await asyncio.sleep(5)
                 return await self._put(path, params, data, True)
-            raise error
+            raise
 
     async def _post(
         self,
@@ -655,11 +654,11 @@ class SensiboClient:
                 path, params=params, data=json.dumps(data), timeout=self.timeout
             ) as resp:
                 return await self._response(resp)
-        except Exception as error:
+        except Exception:
             if retry is False:
                 await asyncio.sleep(5)
                 return await self._post(path, params, data, True)
-            raise error
+            raise
 
     async def _patch(
         self,
@@ -675,11 +674,11 @@ class SensiboClient:
                 path, params=params, data=json.dumps(data), timeout=self.timeout
             ) as resp:
                 return await self._response(resp)
-        except Exception as error:
+        except Exception:
             if retry is False:
                 await asyncio.sleep(5)
                 return await self._patch(path, params, data, True)
-            raise error
+            raise
 
     async def _delete(
         self, path: str, params: dict[str, Any], retry: bool = False
@@ -691,11 +690,11 @@ class SensiboClient:
                 path, params=params, timeout=self.timeout
             ) as resp:
                 return await self._response(resp)
-        except Exception as error:
+        except Exception:
             if retry is False:
                 await asyncio.sleep(5)
                 return await self._delete(path, params, True)
-            raise error
+            raise
 
     async def _response(self, resp: ClientResponse) -> dict[str, Any]:
         """Return response from call."""

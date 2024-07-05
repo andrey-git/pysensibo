@@ -1,4 +1,5 @@
 """Data classes for Sensibo."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -38,13 +39,13 @@ class SensiboDevice:
     available: bool
     hvac_modes: list[str] | None
     fan_modes: list[str] | None
-    fan_modes_translated: dict | None
+    fan_modes_translated: dict[str, str] | None
     swing_modes: list[str] | None
-    swing_modes_translated: dict | None
+    swing_modes_translated: dict[str, str] | None
     horizontal_swing_modes: list[str] | None
-    horizontal_swing_modes_translated: dict | None
+    horizontal_swing_modes_translated: dict[str, str] | None
     light_modes: list[str] | None
-    light_modes_translated: dict | None
+    light_modes_translated: dict[str, str] | None
     temp_unit: str | None
     temp_list: list[int]
     temp_step: int
