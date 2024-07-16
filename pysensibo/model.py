@@ -61,6 +61,7 @@ class SensiboDevice:
     full_capabilities: dict[str, Any]
     motion_sensors: dict[str, MotionSensor] | None
     pm25: float | None
+    pm25_pure: int | None
     room_occupied: bool
     update_available: bool
     schedules: dict[str, Schedules] | None

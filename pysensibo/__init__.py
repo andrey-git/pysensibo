@@ -244,7 +244,12 @@ class SensiboClient:
                     "measurements_integration", False
                 )
                 pure_prime_integration = pure_conf.get("prime_integration", False)
-            pm25 = measure.get("pm25")
+            if dev["productModel"] != "pure":
+                pm25 = measure.get("pm25")
+                pm25_pure = measure.get("pm25")
+            else:
+                pm25 = measure.get("pm25")
+                pm25_pure = measure.get("pm25")
 
             # Binary sensors for main device
             room_occupied = dev["roomIsOccupied"]
@@ -389,6 +394,7 @@ class SensiboClient:
                 pure_prime_integration=pure_prime_integration,
                 pure_conf=pure_conf,
                 pm25=pm25,
+                pm25_pure=pm25_pure,
                 room_occupied=room_occupied,
                 update_available=update_available,
                 filter_clean=filter_clean,
