@@ -87,7 +87,7 @@ class SensiboClient:
             iaq = measure.get("iaq")
             rcda = measure.get("rcda")
 
-            # Add AntiMold
+            # Add AntiMold (premium feature)
             anti_mold: dict[str, Any] | None = dev["antiMoldConfig"]
             anti_mold_running = (
                 anti_mold.get("anti_mold_running") if anti_mold else None
@@ -101,6 +101,18 @@ class SensiboClient:
             target_temperature = ac_states.get("targetTemperature")
             hvac_mode = ac_states.get("mode")
             running = ac_states.get("on")
+            available = dev["connectionStatus"].get("isAlive", True)
+
+            capabilities: dict[str, Any] = dev.get("remoteCapabilities", {}) or {}
+            hvac_modes = list(capabilities.get("modes", {}) or {})
+            if not hvac_modes:
+                LOGGER.warning(
+                    "Device %s not correctly registered with remote on Sensibo cloud.",
+                    name,
+                )
+            hvac_modes.append("off")
+            state = hvac_mode if hvac_mode else "off"
+
             fan_mode: str | None = ac_states.get("fanLevel")
             if fan_mode:
                 fan_mode = fan_mode.lower()
@@ -113,15 +125,7 @@ class SensiboClient:
             light_mode: str | None = ac_states.get("light")
             if light_mode:
                 light_mode = light_mode.lower()
-            available = dev["connectionStatus"].get("isAlive", True)
-            capabilities: dict[str, Any] = dev.get("remoteCapabilities", {}) or {}
-            hvac_modes = list(capabilities.get("modes", {}) or {})
-            if not hvac_modes:
-                LOGGER.warning(
-                    "Device %s not correctly registered with remote on Sensibo cloud.",
-                    name,
-                )
-            hvac_modes.append("off")
+
             current_capabilities: dict[str, Any] = capabilities.get("modes", {}).get(
                 ac_states.get("mode"), {}
             )
@@ -188,29 +192,30 @@ class SensiboClient:
                     if "light" in _capabilities[mode]:
                         full_features.add("light")
 
-            state = hvac_mode if hvac_mode else "off"
-
             fw_ver = dev["firmwareVersion"]
             fw_ver_available = dev.get("currentlyAvailableFirmwareVersion")
             fw_type = dev["firmwareType"]
             model = dev["productModel"]
 
+            # Calibration for temperature and humidity, always available keys
             calibration: dict[str, float] = dev["sensorsCalibration"]
             calibration_temp = calibration.get("temperature")
             calibration_hum = calibration.get("humidity")
 
             # Sky plus supports functionality to use motion sensor as sensor for temp and humidity
+            # In that case the user has it as main sensor we will use those temperature and humidity values
             if main_sensor := dev["mainMeasurementsSensor"]:
                 measurements = main_sensor["measurements"]
                 temperature = measurements.get("temperature")
                 humidity = measurements.get("humidity")
 
             motion_sensors: dict[str, MotionSensor] = {}
-            if dev["motionSensors"]:
+            if dev["motionSensors"]:  # Key is always present
                 sensor: dict[str, Any]
                 for sensor in dev["motionSensors"]:
                     measurement: dict[str, Any] = sensor["measurements"]
                     connection: dict[str, Any] = sensor["connectionStatus"]
+                    # All keys should be present
                     motion_sensors[sensor["id"]] = MotionSensor(
                         id=sensor["id"],
                         alive=connection.get("isAlive"),
@@ -278,7 +283,7 @@ class SensiboClient:
             timer_id = None
             timer_state_on = None
             timer_time = None
-            if dev["productModel"] != "pure":
+            if dev["productModel"] != "pure":  # No timer for Pure devices
                 timer_on = timer.get("isEnabled", False)
                 timer_id = timer.get("id")
                 timer_state: dict[str, Any] | None = timer.get("acState")
@@ -292,10 +297,10 @@ class SensiboClient:
                     else None
                 )
 
-            # Smartmode
+            # Smartmode (climate react)
             smart: dict[str, Any] = dev["smartMode"] if dev["smartMode"] else {}
             smart_on = None
-            if dev["productModel"] != "pure":
+            if dev["productModel"] != "pure":  # No smartmode for Pure devices
                 smart_on = smart.get("enabled", False)
             smart_type: str | None = smart.get("type")
             if smart_type:
