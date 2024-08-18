@@ -255,8 +255,8 @@ class SensiboClient:
                     "measurements_integration", False
                 )
                 pure_prime_integration = pure_conf.get("prime_integration", False)
-                if (pm25 := measure.get("pm25")) is not None:
-                    pm25_pure = PureAQI(pm25)
+                if (_pm25 := measure.get("pm25")) is not None:
+                    pm25_pure = PureAQI(_pm25)
             else:
                 pm25 = measure.get("pm25")
 
