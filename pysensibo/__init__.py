@@ -240,6 +240,12 @@ class SensiboClient:
             pure_geo_integration: bool | None = None
             pure_measure_integration: bool | None = None
             pure_prime_integration: bool | None = None
+
+            # Pure devices has special handling for PM2.5 value
+            # as it represents an AQI value
+            pm25 = None
+            pm25_pure = None
+
             if dev["productModel"] == "pure":
                 pure_boost_enabled = pure_conf.get("enabled", False)
                 pure_sensitivity = pure_conf.get("sensitivity", "n").lower()
@@ -249,12 +255,10 @@ class SensiboClient:
                     "measurements_integration", False
                 )
                 pure_prime_integration = pure_conf.get("prime_integration", False)
-            if dev["productModel"] == "pure" and (pm25 := measure.get("pm25")):
-                pm25 = None
-                pm25_pure = PureAQI(pm25)
+                if (pm25 := measure.get("pm25")) is not None:
+                    pm25_pure = PureAQI(pm25)
             else:
                 pm25 = measure.get("pm25")
-                pm25_pure = None
 
             # Binary sensors for main device
             room_occupied = dev["roomIsOccupied"]
