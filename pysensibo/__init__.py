@@ -8,7 +8,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Any
 
-from aiohttp import ClientResponse, ClientSession
+from aiohttp import ClientResponse, ClientSession, ClientTimeout
 
 from .exceptions import AuthenticationError, SensiboError
 from .model import MotionSensor, Schedules, SensiboData, SensiboDevice
@@ -37,7 +37,7 @@ class SensiboClient:
         """
         self.api_key = api_key
         self._session = session if session else ClientSession()
-        self.timeout = timeout
+        self.timeout = ClientTimeout(total=timeout)
 
     async def async_get_me(self) -> dict[str, Any]:
         """Return info about me."""

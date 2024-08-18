@@ -28,22 +28,22 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
-aiohttp = ">=3.9.2"
+aiohttp = "^3.10"
 
 [tool.poetry.group.dev.dependencies]
 aresponses = "3.0.0"
 codespell = "2.3.0"
 covdefaults = "2.3.0"
 coverage = {version = "7.5.4", extras = ["toml"]}
-mypy = "1.10.1"
-pre-commit = "3.7.1"
+mypy = "1.11.1"
+pre-commit = "3.8.0"
 pre-commit-hooks = "4.6.0"
 pylint = "3.2.5"
-pytest = "8.2.2"
-pytest-asyncio = "0.23.7"
+pytest = "8.3.2"
+pytest-asyncio = "0.23.8"
 pytest-cov = "5.0.0"
-ruff = "0.5.0"
-safety = "3.2.3"
+ruff = "0.6.1"
+safety = "3.2.5"
 yamllint = "1.35.1"
 syrupy = "4.6.1"
 
