@@ -11,7 +11,7 @@ from typing import Any
 from aiohttp import ClientResponse, ClientSession, ClientTimeout
 
 from .exceptions import AuthenticationError, SensiboError
-from .model import MotionSensor, Schedules, SensiboData, SensiboDevice
+from .model import MotionSensor, PureAQI, Schedules, SensiboData, SensiboDevice
 
 APIV1 = "https://home.sensibo.com/api/v1"
 APIV2 = "https://home.sensibo.com/api/v2"
@@ -249,12 +249,12 @@ class SensiboClient:
                     "measurements_integration", False
                 )
                 pure_prime_integration = pure_conf.get("prime_integration", False)
-            if dev["productModel"] != "pure":
-                pm25 = measure.get("pm25")
-                pm25_pure = measure.get("pm25")
+            if dev["productModel"] == "pure" and (pm25 := measure.get("pm25")):
+                pm25 = None
+                pm25_pure = PureAQI(pm25)
             else:
                 pm25 = measure.get("pm25")
-                pm25_pure = measure.get("pm25")
+                pm25_pure = None
 
             # Binary sensors for main device
             room_occupied = dev["roomIsOccupied"]

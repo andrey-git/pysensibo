@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+from enum import IntEnum
 from typing import Any
 
 
@@ -28,7 +29,7 @@ class SensiboDevice:
     feelslike: float | None
     humidity: int | None
     pm25: float | None
-    pm25_pure: int | None
+    pm25_pure: PureAQI | None
     tvoc: int | None
     co2: int | None
     etoh: float | None
@@ -145,3 +146,14 @@ class Schedules:
     days: list[str]
     time: str
     next_utc: datetime
+
+
+class PureAQI(IntEnum):
+    """Pure AQI value.
+
+    PM2.5 values in Pure devices are AQI values.
+    """
+
+    GOOD = 1
+    MODERATE = 2
+    BAD = 3
