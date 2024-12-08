@@ -43,7 +43,7 @@ class SensiboDevice:
     horizontal_swing_mode: str | None
     light_mode: str | None
     available: bool
-    hvac_modes: list[str] | None
+    hvac_modes: list[str]
 
     state: str  # hvac state
 
