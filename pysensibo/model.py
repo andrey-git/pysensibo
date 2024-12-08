@@ -27,7 +27,7 @@ class SensiboDevice:
     ac_states: dict[str, Any]
     temp: float | None
     feelslike: float | None
-    humidity: int | None
+    humidity: float | None
     pm25: float | None
     pm25_pure: PureAQI | None
     tvoc: int | None
@@ -76,10 +76,10 @@ class SensiboDevice:
 
     # Motion sensors are their own dataclasses
     motion_sensors: dict[str, MotionSensor] | None
-    room_occupied: bool  # Only available if motion sensors are present
+    room_occupied: bool | None  # Only available if motion sensors are present
 
     # Schedule data is its own dataclasses
-    schedules: dict[str, Schedules] | None
+    schedules: dict[str, Schedules]
 
     # Pure only data
     pure_boost_enabled: bool | None
@@ -88,7 +88,7 @@ class SensiboDevice:
     pure_geo_integration: bool | None
     pure_measure_integration: bool | None
     pure_prime_integration: bool | None
-    pure_conf: dict[str, Any] | None
+    pure_conf: dict[str, Any]
 
     # Timer only data
     timer_on: bool | None
@@ -101,8 +101,8 @@ class SensiboDevice:
     smart_type: str | None
     smart_low_temp_threshold: float | None
     smart_high_temp_threshold: float | None
-    smart_low_state: dict[str, Any] | None
-    smart_high_state: dict[str, Any] | None
+    smart_low_state: dict[str, Any]
+    smart_high_state: dict[str, Any]
 
     filter_clean: bool
     filter_last_reset: datetime | None
