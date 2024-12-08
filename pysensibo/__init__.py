@@ -65,53 +65,56 @@ class SensiboClient:
         device_data: dict[str, SensiboDevice] = {}
         dev: dict[str, Any]
         for dev in devices:
-            unique_id = dev["id"]
-            mac = dev["macAddress"]
-            serial = dev["serial"]
-            name = dev["room"]["name"]
+            unique_id: str = dev["id"]
+            mac: str = dev["macAddress"]
+            serial: str = dev["serial"]
+            name: str = dev["room"]["name"]
+
             measure: dict[str, Any] = dev["measurements"]
-            temperature = measure.get("temperature")
-            feelslike = measure.get("feelsLike")
-            humidity = measure.get("humidity")
-            location = dev["location"]["id"]
-            location_name = dev["location"]["name"]
-            auto_off = dev["autoOffEnabled"]
-            auto_off_minutes = dev["autoOffMinutes"]
-
+            temperature: float | None = measure.get("temperature")
+            feelslike: float | None = measure.get("feelsLike")
+            humidity: float | None = measure.get("humidity")
             # Add in new sensors for AirQ + Element model
-            tvoc = measure.get("tvoc")
-            co2 = measure.get("co2")
-
+            tvoc: int | None = measure.get("tvoc")
+            co2: int | None = measure.get("co2")
             # Add information for Element model
-            etoh = measure.get("etoh")
-            iaq = measure.get("iaq")
-            rcda = measure.get("rcda")
+            etoh: float | None = measure.get("etoh")
+            iaq: int | None = measure.get("iaq")
+            rcda: float | None = measure.get("rcda")
+
+            location: str = dev["location"]["id"]
+            location_name: str = dev["location"]["name"]
+            auto_off: bool = dev["autoOffEnabled"]
+            auto_off_minutes: int | None = dev["autoOffMinutes"]
 
             # Add AntiMold (premium feature)
             anti_mold: dict[str, Any] | None = dev["antiMoldConfig"]
-            anti_mold_running = (
+            anti_mold_running: bool | None = (
                 anti_mold.get("anti_mold_running") if anti_mold else None
             )
-            anti_mold_enabled = (
+            anti_mold_enabled: bool | None = (
                 anti_mold.get("anti_mold_running") if anti_mold else None
             )
-            anti_mold_fan_time = anti_mold.get("fan_time") if anti_mold else None
+            anti_mold_fan_time: int | None = (
+                anti_mold.get("fan_time") if anti_mold else None
+            )
 
             ac_states: dict[str, Any] = dev["acState"]
-            target_temperature = ac_states.get("targetTemperature")
-            hvac_mode = ac_states.get("mode")
-            running = ac_states.get("on")
-            available = dev["connectionStatus"].get("isAlive", True)
+            target_temperature: int | None = ac_states.get("targetTemperature")
+            hvac_mode: str | None = ac_states.get("mode")
+            running: bool | None = ac_states.get("on")
 
-            capabilities: dict[str, Any] = dev.get("remoteCapabilities", {}) or {}
-            hvac_modes = list(capabilities.get("modes", {}) or {})
+            available: bool = dev["connectionStatus"].get("isAlive", True)
+
+            capabilities: dict[str, Any] = dev["remoteCapabilities"]
+            hvac_modes: list[str] = list(capabilities.get("modes", {}))
             if not hvac_modes:
                 LOGGER.warning(
                     "Device %s not correctly registered with remote on Sensibo cloud.",
                     name,
                 )
             hvac_modes.append("off")
-            state = hvac_mode if hvac_mode else "off"
+            state: str = hvac_mode if hvac_mode else "off"
 
             fan_mode: str | None = ac_states.get("fanLevel")
             if fan_mode:
@@ -163,22 +166,23 @@ class SensiboClient:
                     _light_mode.lower(): _light_mode for _light_mode in light_modes
                 }
                 light_modes = [_light_mode.lower() for _light_mode in light_modes]
-            temperature_unit_key = dev.get("temperatureUnit") or ac_states.get(
+            temperature_unit_key: str | None = dev.get(
                 "temperatureUnit"
-            )
-            temperatures_list = (
+            ) or ac_states.get("temperatureUnit")
+            temperatures_list: list[int] = (
                 current_capabilities.get("temperatures", {})
                 .get(temperature_unit_key, {})
                 .get("values", [0, 1])
             )
+            temperature_step: int = 0
             if temperatures_list:
                 diff = MAX_POSSIBLE_STEP
                 for i in range(len(temperatures_list) - 1):
                     diff = min(diff, temperatures_list[i + 1] - temperatures_list[i])
                 temperature_step = diff
 
-            active_features = list(ac_states)
-            full_features = set()
+            active_features: list[str] = list(ac_states)
+            full_features: set[str] = set()
             if (_capabilities := capabilities.get("modes")) is not None:
                 for mode in _capabilities:
                     if "temperatures" in _capabilities[mode]:
@@ -192,15 +196,15 @@ class SensiboClient:
                     if "light" in _capabilities[mode]:
                         full_features.add("light")
 
-            fw_ver = dev["firmwareVersion"]
-            fw_ver_available = dev.get("currentlyAvailableFirmwareVersion")
-            fw_type = dev["firmwareType"]
-            model = dev["productModel"]
+            fw_ver: str = dev["firmwareVersion"]
+            fw_ver_available: str | None = dev.get("currentlyAvailableFirmwareVersion")
+            fw_type: str = dev["firmwareType"]
+            model: str = dev["productModel"]
 
             # Calibration for temperature and humidity, always available keys
             calibration: dict[str, float] = dev["sensorsCalibration"]
-            calibration_temp = calibration.get("temperature")
-            calibration_hum = calibration.get("humidity")
+            calibration_temp: float | None = calibration.get("temperature")
+            calibration_hum: float | None = calibration.get("humidity")
 
             # Sky plus supports functionality to use motion sensor as sensor for temp and humidity
             # In that case the user has it as main sensor we will use those temperature and humidity values
@@ -243,8 +247,8 @@ class SensiboClient:
 
             # Pure devices has special handling for PM2.5 value
             # as it represents an AQI value
-            pm25 = None
-            pm25_pure = None
+            pm25: float | None = None
+            pm25_pure: PureAQI | None = None
 
             if dev["productModel"] == "pure":
                 pure_boost_enabled = pure_conf.get("enabled", False)
@@ -261,17 +265,15 @@ class SensiboClient:
                 pm25 = measure.get("pm25")
 
             # Binary sensors for main device
-            room_occupied = dev["roomIsOccupied"]
-            update_available = bool(
+            room_occupied: bool | None = dev["roomIsOccupied"]
+            update_available: bool = bool(
                 dev["firmwareVersion"] != dev["currentlyAvailableFirmwareVersion"]
             )
 
             # Filters
-            filters: dict[str, Any] = (
-                dev["filtersCleaning"] if dev["filtersCleaning"] else {}
-            )
+            filters: dict[str, Any] = dev.get("filtersCleaning", {})
             filter_clean: bool = filters.get("shouldCleanFilters", False)
-            clean_time: dict[str, Any] = filters.get("lastFiltersCleanTime") or {}
+            clean_time: dict[str, Any] = filters.get("lastFiltersCleanTime", {})
             clean_time_str: str | None = clean_time.get("time")
             filter_last_reset: datetime | None = (
                 datetime.strptime(clean_time_str, "%Y-%m-%dT%H:%M:%SZ").replace(
@@ -283,15 +285,16 @@ class SensiboClient:
 
             # Timer
             timer: dict[str, Any] = dev["timer"] if dev["timer"] else {}
-            timer_on = None
-            timer_id = None
-            timer_state_on = None
-            timer_time = None
+            timer_on: bool | None = None
+            timer_id: str | None = None
+            timer_state_on: bool | None = None
+            timer_time: datetime | None = None
             if dev["productModel"] != "pure":  # No timer for Pure devices
                 timer_on = timer.get("isEnabled", False)
                 timer_id = timer.get("id")
                 timer_state: dict[str, Any] | None = timer.get("acState")
-                timer_state_on = timer_state.get("on") if timer_state else None
+                if timer_state:
+                    timer_state_on = timer_state.get("on")
                 timer_time_str: str | None = timer.get("targetTime")
                 timer_time = (
                     datetime.strptime(timer_time_str, "%Y-%m-%dT%H:%M:%S").replace(
@@ -302,15 +305,17 @@ class SensiboClient:
                 )
 
             # Smartmode (climate react)
-            smart: dict[str, Any] = dev["smartMode"] if dev["smartMode"] else {}
-            smart_on = None
+            smart: dict[str, Any] = dev.get("smartMode", {})
+            smart_on: bool | None = None
             if dev["productModel"] != "pure":  # No smartmode for Pure devices
                 smart_on = smart.get("enabled", False)
             smart_type: str | None = smart.get("type")
             if smart_type:
                 smart_type = smart_type.lower()
-            smart_low_temp_threshold = smart.get("lowTemperatureThreshold")
-            smart_high_temp_threshold = smart.get("highTemperatureThreshold")
+            smart_low_temp_threshold: int | None = smart.get("lowTemperatureThreshold")
+            smart_high_temp_threshold: int | None = smart.get(
+                "highTemperatureThreshold"
+            )
             _smart_low_state: dict[str, Any] = smart.get("lowTemperatureState", {})
             _smart_high_state: dict[str, Any] = smart.get("highTemperatureState", {})
             smart_low_state: dict[str, Any] = {}
@@ -327,7 +332,7 @@ class SensiboClient:
                     )
 
             # Schedules
-            schedule_list = dev["schedules"]
+            schedule_list: list[dict[str, Any]] = dev["schedules"]
             schedules: dict[str, Schedules] = {}
             if schedule_list:
                 for schedule in schedule_list:
