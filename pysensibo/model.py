@@ -154,6 +154,7 @@ class PureAQI(IntEnum):
     PM2.5 values in Pure devices are AQI values.
     """
 
+    UNKNOWN = 0
     GOOD = 1
     MODERATE = 2
     BAD = 3
