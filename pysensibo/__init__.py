@@ -106,8 +106,8 @@ class SensiboClient:
 
             available: bool = dev["connectionStatus"].get("isAlive", True)
 
-            capabilities: dict[str, Any] = dev["remoteCapabilities"]
-            hvac_modes: list[str] = list(capabilities.get("modes", {}))
+            capabilities: dict[str, Any] = dev["remoteCapabilities"] or {}
+            hvac_modes: list[str] = list(capabilities.get("modes") or {})
             if not hvac_modes:
                 LOGGER.warning(
                     "Device %s not correctly registered with remote on Sensibo cloud.",
@@ -273,7 +273,7 @@ class SensiboClient:
             # Filters
             filters: dict[str, Any] = dev.get("filtersCleaning", {})
             filter_clean: bool = filters.get("shouldCleanFilters", False)
-            clean_time: dict[str, Any] = filters.get("lastFiltersCleanTime", {})
+            clean_time: dict[str, Any] = filters.get("lastFiltersCleanTime") or {}
             clean_time_str: str | None = clean_time.get("time")
             filter_last_reset: datetime | None = (
                 datetime.strptime(clean_time_str, "%Y-%m-%dT%H:%M:%SZ").replace(
@@ -305,7 +305,7 @@ class SensiboClient:
                 )
 
             # Smartmode (climate react)
-            smart: dict[str, Any] = dev.get("smartMode", {})
+            smart: dict[str, Any] = dev.get("smartMode") or {}
             smart_on: bool | None = None
             if dev["productModel"] != "pure":  # No smartmode for Pure devices
                 smart_on = smart.get("enabled", False)
