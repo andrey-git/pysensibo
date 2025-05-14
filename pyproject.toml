@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pysensibo"
-version = "1.2.0"
+version = "1.2.1"
 description = "asyncio-friendly python API for Sensibo"
 authors = [
     "G Johansson <goran.johansson@shiftit.se>",
