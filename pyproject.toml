@@ -33,20 +33,23 @@ aiohttp = "^3.10"
 
 [tool.poetry.group.dev.dependencies]
 aresponses = "3.0.0"
-codespell = "2.3.0"
+codespell = "2.4.1"
 covdefaults = "2.3.0"
-coverage = {version = "7.5.4", extras = ["toml"]}
-mypy = "1.11.1"
-pre-commit = "3.8.0"
-pre-commit-hooks = "4.6.0"
-pylint = "3.2.5"
-pytest = "8.3.2"
-pytest-asyncio = "0.23.8"
-pytest-cov = "5.0.0"
-ruff = "0.6.1"
-safety = "3.2.5"
-yamllint = "1.35.1"
-syrupy = "4.6.1"
+coverage = {version = "7.9.1", extras = ["toml"]}
+mypy = "1.16.0"
+pre-commit = "4.2.0"
+pre-commit-hooks = "5.0.0"
+pylint = "3.3.7"
+pytest = "8.4.0"
+pytest-asyncio = "1.0.0"
+pytest-cov = "6.2.1"
+ruff = "0.11.13"
+pytest-sugar = "1.0.0"
+pytest-github-actions-annotate-failures = "0.3.0"
+safety = "3.5.2"
+yamllint = "1.37.1"
+syrupy = "4.9.1"
+pylint-per-file-ignores = "1.4.0"
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/andrey-git/pysensibo/issues"
@@ -54,6 +57,7 @@ Changelog = "https://github.com/andrey-git/pysensibo/releases"
 
 [tool.coverage.report]
 show_missing = true
+fail_under = 80
 
 [tool.coverage.run]
 plugins = ["covdefaults"]
@@ -93,6 +97,23 @@ warn_unused_ignores = true
 [tool.pylint.MASTER]
 ignore = [
   "tests"
+]
+load-plugins = [
+    "pylint.extensions.code_style",
+    "pylint.extensions.typing",
+    "pylint_per_file_ignores",
+]
+persistent = false
+extension-pkg-allow-list = [
+    "av.audio.stream",
+    "av.logging",
+    "av.stream",
+    "ciso8601",
+    "orjson",
+    "cv2",
+]
+fail-on = [
+    "I",
 ]
 
 [tool.pylint.BASIC]
@@ -362,8 +383,21 @@ ignore-imports = true
 max-line-length = 88
 
 [tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "DEBUG"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 addopts = "--cov"
+testpaths = [
+    "tests",
+]
+norecursedirs = [
+    ".git",
+]
+log_format = "%(asctime)s.%(msecs)03d %(levelname)-8s %(threadName)s %(name)s:%(filename)s:%(lineno)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff.lint]
 ignore = [
