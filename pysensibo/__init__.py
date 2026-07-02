@@ -36,7 +36,7 @@ class SensiboClient:
         session: aiohttp.ClientSession or None to create a new session.
         """
         self.api_key = api_key
-        self._session = session if session else ClientSession()
+        self._session = session or ClientSession()
         self.timeout = ClientTimeout(total=timeout)
 
     async def async_get_me(self) -> dict[str, Any]:
@@ -114,7 +114,7 @@ class SensiboClient:
                     name,
                 )
             hvac_modes.append("off")
-            state: str = hvac_mode if hvac_mode else "off"
+            state: str = hvac_mode or "off"
 
             fan_mode: str | None = ac_states.get("fanLevel")
             if fan_mode:
@@ -235,9 +235,7 @@ class SensiboClient:
                     )
 
             # Add information for pure devices
-            pure_conf: dict[str, Any] = (
-                dev["pureBoostConfig"] if dev["pureBoostConfig"] else {}
-            )
+            pure_conf: dict[str, Any] = dev["pureBoostConfig"] or {}
             pure_boost_enabled: bool | None = None
             pure_sensitivity: str | None = None
             pure_ac_integration: bool | None = None
@@ -284,7 +282,7 @@ class SensiboClient:
             )
 
             # Timer
-            timer: dict[str, Any] = dev["timer"] if dev["timer"] else {}
+            timer: dict[str, Any] = dev["timer"] or {}
             timer_on: bool | None = None
             timer_id: str | None = None
             timer_state_on: bool | None = None

@@ -33,23 +33,24 @@ aiohttp = "^3.10"
 
 [tool.poetry.group.dev.dependencies]
 aresponses = "3.0.0"
-codespell = "2.4.1"
+codespell = "2.4.2"
 covdefaults = "2.3.0"
-coverage = {version = "7.9.1", extras = ["toml"]}
-mypy = "1.16.0"
-pre-commit = "4.2.0"
-pre-commit-hooks = "5.0.0"
-pylint = "3.3.7"
-pytest = "8.4.0"
-pytest-asyncio = "1.0.0"
-pytest-cov = "6.2.1"
-ruff = "0.11.13"
-pytest-sugar = "1.0.0"
-pytest-github-actions-annotate-failures = "0.3.0"
-safety = "3.5.2"
-yamllint = "1.37.1"
-syrupy = "4.9.1"
-pylint-per-file-ignores = "1.4.0"
+coverage = {version = "7.15.0", extras = ["toml"]}
+mypy = "2.1.0"
+pre-commit = "4.6.0"
+pre-commit-hooks = "6.0.0"
+pylint = "4.0.6"
+pytest = "9.1.1"
+pytest-asyncio = "1.4.0"
+pytest-cov = "7.1.0"
+ruff = "0.15.20"
+pytest-sugar = "1.1.1"
+pytest-github-actions-annotate-failures = "0.4.2"
+safety = "3.8.1"
+yamllint = "1.38.0"
+syrupy = "5.4.0"
+pylint-per-file-ignores = "3.2.1"
+blacken-docs = "1.20.0"
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/andrey-git/pysensibo/issues"
@@ -415,7 +416,6 @@ ignore = [
     "PLR0915", # Too many statements ({statements} > {max_statements})
     "PLR2004", # Magic value used in comparison, consider replacing {value} with a constant variable
     "PLW2901", # Outer {outer_kind} variable {name} overwritten by inner {inner_kind} target
-    "PT004", # Fixture {fixture} does not return anything, add leading underscore
     "PT011", # pytest.raises({exception}) is too broad, set the `match` parameter or use a more specific exception
     "PT018", # Assertion should be broken down into multiple parts
     "RUF001", # String contains ambiguous unicode character.
@@ -429,7 +429,6 @@ ignore = [
     "TRY003", # Avoid specifying long messages outside the exception class
     "TRY400", # Use `logging.exception` instead of `logging.error`
     # Ignored due to performance: https://github.com/charliermarsh/ruff/issues/2923
-    "UP038", # Use `X | Y` in `isinstance` call instead of `(X, Y)`
 
     # May conflict with the formatter, https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
     "W191",
@@ -457,19 +456,18 @@ ignore = [
     "FBT001", # Boolean-typed positional argument in function definition
     "FBT002", # Boolean default positional argument in function definition
     "PERF401", # Use a list comprehension to create a transformed list
-    "TCH002", # Move third-party import {} into a type-checking block
-    "TCH003", # Move standard library import {} into a type-checking block
+    "TC002", # Move third-party import {} into a type-checking block
+    "TC003", # Move standard library import {} into a type-checking block
     "A002", # Argument {name} is shadowing a Python builtin
     "A001", # Variable {name} is shadowing a Python builtin
     "DTZ005", # datetime.datetime.now() called without a tz argument
     "B008", # Do not perform function call {name} in argument defaults
     "EM102", # Exception must not use an f-string literal, assign to variable first
     "DTZ007", # Naive datetime constructed using datetime.datetime.strptime() without %z
-    "S320", # Using lxml to parse untrusted data is known to be vulnerable to XML attacks
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
     "N818", # Exception name {name} should be named with an Error suffix
     "S101", # Use of assert detected
-    "TCH001", # Move application import {} into a type-checking block
+    "TC001", # Move application import {} into a type-checking block
     "N999", # Invalid module name
     "FBT003" # Boolean positional value in function call
 ]
