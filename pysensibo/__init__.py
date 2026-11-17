@@ -5,13 +5,21 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from collections.abc import AsyncIterator
 from datetime import datetime, timezone
 from typing import Any
 
 from aiohttp import ClientResponse, ClientSession, ClientTimeout
 
-from .exceptions import AuthenticationError, SensiboError
-from .model import MotionSensor, PureAQI, Schedules, SensiboData, SensiboDevice
+from .exceptions import AuthenticationError, SensiboError, StreamUnavailableError
+from .model import (
+    MotionSensor,
+    PureAQI,
+    Schedules,
+    SensiboData,
+    SensiboDevice,
+    SensiboEvent,
+)
 
 APIV1 = "https://home.sensibo.com/api/v1"
 APIV2 = "https://home.sensibo.com/api/v2"
@@ -19,7 +27,17 @@ API_GRAPHQL = "https://home.sensibo.com/graphql/v1"
 
 TIMEOUT = 5 * 60
 HTTP_AUTH_FAILED_STATUS_CODES = {401, 403}
+HTTP_STREAM_UNAVAILABLE_STATUS_CODES = {429, 503}
 MAX_POSSIBLE_STEP = 1000
+
+# The event stream sends a heartbeat every 120 seconds.
+STREAM_CONNECT_TIMEOUT = 30
+STREAM_READ_TIMEOUT = 5 * 60
+
+EVENT_HELLO = "hello"
+EVENT_MEASUREMENTS = "measurements"
+EVENT_CHANGED = "changed"
+EVENT_RESYNC = "resync"
 
 LOGGER = logging.getLogger(__name__)
 
@@ -622,6 +640,49 @@ class SensiboClient:
             data["reason"] = "StateCorrectionByUser"
         return await self._patch(APIV2 + f"/pods/{uid}/acStates/{name}", params, data)
 
+    async def async_stream_events(self) -> AsyncIterator[SensiboEvent]:
+        """Listen to the event stream of the Sensibo API (Server-Sent Events).
+
+        The stream tells that a device changed, so the devices do not have to
+        be polled frequently. It stays open for hours. The events:
+
+        hello: the stream is open, get the devices now.
+        measurements: new measurements of a device or a motion sensor, see
+          update_measurements.
+        changed: something else changed on the device (the AC state, a timer,
+          the connection...), get the device again.
+        resync: the API closes the stream, open it again.
+
+        The iteration stops when the API closes the stream. Open it again after
+        a delay with a random part, and make the delay longer after each failure.
+        Raises StreamUnavailableError when the API does not accept the stream
+        now (wait at least its retry_after), and aiohttp.ClientError or
+        TimeoutError when the connection breaks. Without an open stream, poll
+        the devices as before. With an open stream, a slow poll (15 minutes or
+        more) is still necessary, because not every field has an event.
+        """
+        headers = {"Accept": "text/event-stream", "X-Api-Key": self.api_key}
+        timeout = ClientTimeout(
+            total=None,
+            sock_connect=STREAM_CONNECT_TIMEOUT,
+            sock_read=STREAM_READ_TIMEOUT,
+        )
+        async with self._session.get(
+            APIV2 + "/stream", headers=headers, timeout=timeout
+        ) as resp:
+            if resp.status in HTTP_AUTH_FAILED_STATUS_CODES:
+                raise AuthenticationError("Invalid API key")
+            if resp.status in HTTP_STREAM_UNAVAILABLE_STATUS_CODES:
+                raise StreamUnavailableError(
+                    f"Event stream is not available: {resp.status}",
+                    retry_after=_retry_after(resp),
+                )
+            if resp.status != 200:
+                error = await resp.text()
+                raise SensiboError(f"API error: {error}")
+            async for event in _parse_events(resp.content.iter_any()):
+                yield event
+
     async def _get(
         self, path: str, params: dict[str, Any], retry: int = 3
     ) -> dict[str, Any]:
@@ -726,3 +787,110 @@ class SensiboClient:
         except Exception as error:
             raise SensiboError(f"Could not return json {error}") from error
         return response
+
+
+def update_measurements(data: SensiboData, event: SensiboEvent) -> bool:
+    """Put the measurements of a "measurements" event into the data.
+
+    The event has the same measurements object as the device (or the motion
+    sensor) in the result of async_get_devices_data. Both data.raw and
+    data.parsed are updated in place.
+
+    Returns False when the device or the motion sensor of the event is not in
+    the data. Get the devices again in that case.
+    """
+    measurements = event.data.get("measurements")
+    device_id = event.device_id
+    if not isinstance(measurements, dict) or device_id is None:
+        return False
+    device = data.parsed.get(device_id)
+    dev: dict[str, Any] | None = next(
+        (_dev for _dev in data.raw.get("result", []) if _dev["id"] == device_id),
+        None,
+    )
+    if device is None or dev is None:
+        return False
+
+    if event.id == device_id:
+        dev["measurements"].update(measurements)
+    else:
+        sensor = (device.motion_sensors or {}).get(event.id or "")
+        raw_sensor: dict[str, Any] | None = next(
+            (
+                _sensor
+                for _sensor in dev["motionSensors"] or []
+                if _sensor["id"] == event.id
+            ),
+            None,
+        )
+        if sensor is None or raw_sensor is None:
+            return False
+        raw_sensor["measurements"].update(measurements)
+        measurement: dict[str, Any] = raw_sensor["measurements"]
+        sensor.motion = measurement.get("motion")
+        sensor.battery_voltage = measurement.get("batteryVoltage")
+        sensor.humidity = measurement.get("humidity")
+        sensor.temperature = measurement.get("temperature")
+        sensor.rssi = measurement.get("rssi")
+        main_sensor: dict[str, Any] | None = dev["mainMeasurementsSensor"]
+        if main_sensor and main_sensor.get("id") == event.id:
+            main_sensor["measurements"].update(measurements)
+
+    measure: dict[str, Any] = dev["measurements"]
+    device.temp = measure.get("temperature")
+    device.feelslike = measure.get("feelsLike")
+    device.humidity = measure.get("humidity")
+    device.tvoc = measure.get("tvoc")
+    device.co2 = measure.get("co2")
+    device.etoh = measure.get("etoh")
+    device.iaq = measure.get("iaq")
+    device.rcda = measure.get("rcda")
+    if main_sensor := dev["mainMeasurementsSensor"]:
+        device.temp = main_sensor["measurements"].get("temperature")
+        device.humidity = main_sensor["measurements"].get("humidity")
+    if dev["productModel"] == "pure":
+        _pm25 = measure.get("pm25")
+        device.pm25_pure = PureAQI(_pm25) if _pm25 is not None else None
+    else:
+        device.pm25 = measure.get("pm25")
+    return True
+
+
+def _retry_after(resp: ClientResponse) -> float | None:
+    """Return the seconds of the Retry-After header of a response."""
+    try:
+        return float(resp.headers["Retry-After"])
+    except (KeyError, ValueError):
+        return None
+
+
+async def _parse_events(chunks: AsyncIterator[bytes]) -> AsyncIterator[SensiboEvent]:
+    """Parse Server-Sent Events from the chunks of a response."""
+    buffer = b""
+    name = ""
+    data_lines: list[str] = []
+    async for chunk in chunks:
+        buffer += chunk
+        *lines, buffer = buffer.split(b"\n")
+        for raw_line in lines:
+            line = raw_line.decode("utf-8", errors="replace").rstrip("\r")
+            if line:
+                # A line that starts with a colon is a comment (the heartbeat).
+                field, _, value = line.partition(":")
+                value = value.removeprefix(" ")
+                if field == "event":
+                    name = value
+                elif field == "data":
+                    data_lines.append(value)
+                continue
+            # An empty line ends the event.
+            if data_lines:
+                try:
+                    data = json.loads("\n".join(data_lines))
+                except ValueError:
+                    LOGGER.debug("Event %s without JSON data: %s", name, data_lines)
+                    data = None
+                if isinstance(data, dict):
+                    yield SensiboEvent(name=name or "message", data=data)
+            name = ""
+            data_lines = []
