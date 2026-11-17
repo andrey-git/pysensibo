@@ -118,6 +118,30 @@ class SensiboDevice:
 
 
 @dataclass
+class SensiboEvent:
+    """An event from the event stream of the Sensibo API.
+
+    name: "hello", "measurements", "changed" or "resync"
+    data: the JSON object of the event
+    """
+
+    name: str
+    data: dict[str, Any]
+
+    @property
+    def id(self) -> str | None:
+        """Return the id of the device or motion sensor of the event."""
+        uid: str | None = self.data.get("id")
+        return uid
+
+    @property
+    def device_id(self) -> str | None:
+        """Return the id of the device, also for an event of its motion sensor."""
+        uid: str | None = self.data.get("podId") or self.data.get("id")
+        return uid
+
+
+@dataclass
 class MotionSensor:
     """Dataclass for motionsensors."""
 
